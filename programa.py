@@ -31,7 +31,10 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 
-RUTA_DOC = "DOCUMENTACION.md"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+RUTA_DOC = os.path.join(BASE_DIR, "DOCUMENTACION.md")
+DEMO_MODE = False
+ASCII_MODE = False
 
 
 class TipoOpcion(Enum):
@@ -54,17 +57,14 @@ class OpcionMenu:
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FUNCIONES DE UTILIDAD Y CARGA DE DATOS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def limpiar_pantalla():
-    """Limpia la pantalla de la consola."""
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-
 def pausar():
     """Pausa y espera que el usuario presione ENTER."""
-    input("\n💡 Presioná [ENTER] para continuar...")
-
+    if DEMO_MODE:
+        return
+    try:
+        input("\n💡 Presioná [ENTER] para continuar...")
+    except EOFError:
+        return
 
 def cargar_documentacion(ruta: str) -> str:
     """Lee el archivo de documentación completo y lo devuelve como texto."""
@@ -75,13 +75,17 @@ def cargar_documentacion(ruta: str) -> str:
         print(f"\n📁 Ruta esperada: {os.path.abspath(ruta)}")
         print("⚠️  Asegurate de que DOCUMENTACION.md esté en la misma carpeta que programa.py\n")
         return ""
-    
     try:
         with open(ruta, "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
         print(f"\n❌ Error al leer el archivo: {e}\n")
         return ""
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def limpiar_pantalla():
+    """Limpia la pantalla de la consola."""
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 
 def parsear_secciones(md: str) -> Dict[str, str]:
@@ -246,20 +250,30 @@ def construir_estructura_menus(secciones: Dict[str, str]) -> OpcionMenu:
         menu_raiz.hijos.append(sprint3)
 
     # Referencias y Glosario
-    k_refs = _find_first_key_by_tokens(secciones, ["referencia"])
+    k_refs = next((k for k in secciones if k.startswith("5_")), None) or _find_first_key_by_tokens(secciones, ["referencia"])
     if k_refs:
         menu_raiz.hijos.append(OpcionMenu(
-            clave=k_refs, etiqueta="Referencias y Bibliografía", icono="📚", tipo=TipoOpcion.CONTENIDO,
-            descripcion="Fuentes, bibliografía y recursos utilizados"
+            clave=k_refs, etiqueta="Referencias y Bibliograf?a", icono="??", tipo=TipoOpcion.CONTENIDO,
+            descripcion="Fuentes, bibliograf?a y recursos utilizados"
         ))
-    k_glos = _find_first_key_by_tokens(secciones, ["glosario"])
+    k_glos = next((k for k in secciones if k.startswith("6_")), None) or _find_first_key_by_tokens(secciones, ["glosario"])
     if k_glos:
         menu_raiz.hijos.append(OpcionMenu(
-            clave=k_glos, etiqueta="Glosario de Términos", icono="📝", tipo=TipoOpcion.CONTENIDO,
-            descripcion="Definiciones de términos técnicos y de negocio"
+            clave=k_glos, etiqueta="Glosario de T?rminos", icono="?", tipo=TipoOpcion.CONTENIDO,
+            descripcion="Definiciones de t?rminos t?cnicos y de negocio"
         ))
 
+    if ASCII_MODE:
+        aplicar_ascii_iconos(menu_raiz)
     return menu_raiz
+
+def aplicar_ascii_iconos(menu: OpcionMenu):
+    """Reemplaza iconos por ASCII simple si la consola no soporta Unicode."""
+    stack = [menu]
+    while stack:
+        nodo = stack.pop()
+        nodo.icono = "*"
+        stack.extend(nodo.hijos)
 
 
 def construir_submenu_sprint3(secciones: Dict[str, str]) -> Optional[OpcionMenu]:
@@ -269,7 +283,7 @@ def construir_submenu_sprint3(secciones: Dict[str, str]) -> Optional[OpcionMenu]
     for k in secciones:
         kn = _normalize_for_match(k)
         partes = k.split('_')
-        if re.match(r"^4_.*sprint.*3", kn) and len(partes) == 6:
+        if re.match(r"^4_.*sprint.*3", kn):
             clave_base = k
             break
     if not clave_base:
@@ -295,7 +309,7 @@ def construir_submenu_sprint3(secciones: Dict[str, str]) -> Optional[OpcionMenu]
     # Buscar todas las subsecciones H3 de Sprint 3
     subsecciones = []
     for k in secciones:
-        if k.startswith(clave_base + "_") and k.count("_") == 9:  # H3 subsections
+        if k.startswith(clave_base + "_"):  # H3 subsections
             titulo = _get_title_from_content(secciones[k])
             if titulo:
                 # Determinar icono
@@ -361,12 +375,12 @@ def construir_submenu_sprint3(secciones: Dict[str, str]) -> Optional[OpcionMenu]
 
 def construir_submenu_sprint1(secciones: Dict[str, str]) -> Optional[OpcionMenu]:
     """Construye el submenú completo del Sprint 1 dinámicamente."""
-    # Buscar clave base de Sprint 1 (debe tener exactamente 6 partes)
+    # Buscar clave base de Sprint 1
     clave_base = None
     for k in secciones:
         kn = _normalize_for_match(k)
         partes = k.split('_')
-        if re.match(r"^2_.*sprint.*1", kn) and len(partes) == 6:
+        if re.match(r"^2_.*sprint.*1", kn):
             clave_base = k
             break
     
@@ -393,7 +407,7 @@ def construir_submenu_sprint1(secciones: Dict[str, str]) -> Optional[OpcionMenu]
     # Buscar todas las subsecciones H3 de Sprint 1
     subsecciones = []
     for k in secciones:
-        if k.startswith(clave_base + "_") and k.count("_") == 9:  # H3 subsections
+        if k.startswith(clave_base + "_"):  # H3 subsections
             titulo = _get_title_from_content(secciones[k])
             if titulo:
                 # Determinar icono
@@ -648,6 +662,12 @@ def construir_submenu_etapa(secciones: Dict[str, str], clave_sprint: str,
 
 def mostrar_header():
     """Muestra el encabezado principal del programa."""
+    if ASCII_MODE:
+        print("\n" + "=" * 80)
+        print(" PROYECTO AURELION - VISOR DE DOCUMENTACION TECNICA ".center(80, "="))
+        print(" IBM & Guayerd · Analisis de Datos Retail · 2025 ".center(80))
+        print("=" * 80)
+        return
     print("\n" + "╔" + "═" * 78 + "╗")
     print("║" + " 🏪  PROYECTO AURELION - VISOR DE DOCUMENTACIÓN TÉCNICA  🏪 ".center(78) + "║")
     print("╠" + "═" * 78 + "╣")
@@ -723,16 +743,62 @@ def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
     mostrar_header()
     mostrar_breadcrumbs(ruta)
     
-    print("\n" + "╔" + "═" * 78 + "╗")
-    print("║" + f" {titulo} ".center(78) + "║")
-    print("╚" + "═" * 78 + "╝\n")
+    if ASCII_MODE:
+        print("\n" + "=" * 80)
+        print(f" {titulo} ".center(80, "="))
+        print("=" * 80 + "\n")
+    else:
+        print("\n" + "╔" + "═" * 78 + "╗")
+        print("║" + f" {titulo} ".center(78) + "║")
+        print("╚" + "═" * 78 + "╝\n")
     
-    # Mostrar contenido con scroll
+    # Mostrar contenido con scroll y bloques de output destacados
     lineas = contenido.split('\n')
+    in_output_block = False
+    output_buffer = []
+    max_lines = 80
+    shown = 0
     for linea in lineas:
-        print(linea)
+        # Detectar inicio de bloque de output
+        if linea.strip().startswith('```output'):
+            in_output_block = True
+            output_buffer = []
+            continue
+        # Detectar fin de bloque de output
+        if in_output_block and linea.strip() == '```':
+            # Mostrar el bloque de output con formato especial
+            if ASCII_MODE:
+                print("\n" + "-" * 76)
+                print(" OUTPUT DEL NOTEBOOK ".center(76, "-"))
+            else:
+                print('\n' + '╔' + '═' * 76 + '╗')
+                print('║' + ' OUTPUT DEL NOTEBOOK '.center(76) + '║')
+                print('╠' + '═' * 76 + '╣')
+            for out_line in output_buffer:
+                # Ajustar ancho y márgenes
+                for subline in out_line.split('\n'):
+                    if ASCII_MODE:
+                        print(subline[:74])
+                    else:
+                        print('║ ' + subline[:74].ljust(74) + ' ║')
+            if not ASCII_MODE:
+                print('╚' + '═' * 76 + '╝\n')
+            in_output_block = False
+            output_buffer = []
+            continue
+        if in_output_block:
+            output_buffer.append(linea)
+        else:
+            print(linea)
+            shown += 1
+            if shown >= max_lines and not DEMO_MODE:
+                try:
+                    input("\n--- Continuar (ENTER) ---")
+                except EOFError:
+                    return
+                shown = 0
     
-    print("\n" + "═" * 80)
+    print("\n" + ("=" * 80 if ASCII_MODE else "═" * 80))
     pausar()
 
 
@@ -810,6 +876,7 @@ class NavegadorMenus:
             return False
         
         nuevas_secciones = parsear_secciones(md)
+        print(f"ℹ️ Secciones detectadas: {len(nuevas_secciones)}")
         if not nuevas_secciones:
             mostrar_mensaje("No se pudieron detectar secciones.", "error")
             pausar()
@@ -828,7 +895,11 @@ class NavegadorMenus:
             
             mostrar_menu(menu_actual.hijos, ruta_nombres)
             
-            opcion = input("\n👉 Seleccioná una opción: ").strip().upper()
+            try:
+                opcion = input("\n👉 Seleccioná una opción: ").strip().upper()
+            except EOFError:
+                mostrar_mensaje("Entrada no disponible. Saliendo del visor.", "warning")
+                break
             
             # Opción: Salir
             if opcion == 'Q' and len(self.ruta) == 1:
@@ -867,6 +938,18 @@ class NavegadorMenus:
 
 def main():
     """Función principal del programa."""
+    global DEMO_MODE, ASCII_MODE
+    DEMO_MODE = any(arg.lower() in ("--demo", "--auto") for arg in sys.argv[1:])
+
+    # Forzar UTF-8 y detectar necesidad de modo ASCII
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+    encoding = (sys.stdout.encoding or "").lower()
+    ASCII_MODE = "utf" not in encoding
+
     limpiar_pantalla()
     
     # Cargar documentación
@@ -880,16 +963,34 @@ def main():
     # Parsear secciones
     print("📖 Parseando secciones...")
     secciones = parsear_secciones(md)
+    print(f"ℹ️ Secciones detectadas: {len(secciones)}")
     
     if not secciones:
         print("\n❌ No se pudieron detectar secciones en la documentación.")
         sys.exit(1)
+
+    # Validación básica de presencia de capítulos clave
+    requeridas = {
+        "TLDR": _find_first_key_by_tokens(secciones, ["TLDR"]),
+        "SPRINT1": _find_first_key_by_tokens(secciones, ["sprint", "1"]),
+        "SPRINT2": _find_first_key_by_tokens(secciones, ["sprint", "2"]),
+        "SPRINT3": _find_first_key_by_tokens(secciones, ["sprint", "3"]),
+    }
+    faltantes = [k for k, v in requeridas.items() if not v]
+    if faltantes:
+        print(f"⚠️ Secciones faltantes: {', '.join(faltantes)}")
     
     # Construir estructura de menús
     print("🏗️  Construyendo estructura de menús...")
     menu_raiz = construir_estructura_menus(secciones)
     
-    # Iniciar navegador
+    # Iniciar navegador o demo
+    if DEMO_MODE:
+        print("✅ Sistema listo. Modo demo activado.\n")
+        clave_tldr = _find_first_key_by_tokens(secciones, ["TLDR"]) or "DOC_COMPLETA"
+        mostrar_contenido("DEMO - Resumen ejecutivo", secciones.get(clave_tldr, "Contenido no disponible"), ["Inicio", "Demo"])
+        return
+
     print("✅ Sistema listo. Iniciando navegador...\n")
     pausar()
     

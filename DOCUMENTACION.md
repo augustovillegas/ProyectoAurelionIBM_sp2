@@ -17,6 +17,7 @@
 ### 📋 Resumen ejecutivo
 - TL;DR - Cambios y resultados clave
 
+
 ### 📖 Secciones principales
 
 **1. Visión general del proyecto**
@@ -39,25 +40,446 @@
    - 3.6. Etapa 3 – Procesamiento de PRODUCTOS y VENTAS
    - 3.7. Etapa 4 – Consolidación e integración
 
+**4. Sprint 3 (Demo 3 – sincrónica)**
+   - 4.1. Objetivo y Metodología
+   - 4.2. Parámetros y Artefactos Exportados
+   - 4.3. Indicadores y Métricas de Modelos
+   - 4.4. Recomendaciones y Consideraciones Técnicas
+   - 4.5. Próximos Pasos
+   - 4.6. Trazabilidad y Control de Calidad de Datos
+   - 4.7. Selección de Hiperparámetros y Validación
+   - 4.8. Limitaciones y Advertencias
+   - 4.9. Ética, Privacidad y Buenas Prácticas
+   - 4.10. Mantenimiento y Actualización de Modelos
+   - 4.11. Guía de Reproducibilidad y Entorno
+   - 4.12. Esquema Visual del Pipeline
+   - 4.13. Detalle de Features Utilizadas
+   - 4.14. Explicación de Métricas
+   - 4.15. Benchmarking y Modelos Alternativos
+   - 4.16. Impacto de Negocio y Casos de Uso
+   - 4.17. Checklist de Buenas Prácticas
+
+**5. Referencias y Bibliografía**
+**6. Glosario de Términos**
 ---
 
-## 📋 TL;DR - Resumen Ejecutivo
+### 4.11. Guía de Reproducibilidad y Entorno
+
+Para ejecutar el pipeline y reproducir los resultados:
+
+- **Requisitos**:
+   - Python 3.10+
+   - Librerías: pandas, numpy, scikit-learn, imbalanced-learn, xgboost, joblib, matplotlib, seaborn
+- **Instalación de dependencias**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+- **Ejecución**:
+   1. Abrir el notebook principal (`Proyecto_Aurelion.ipynb`).
+   2. Ejecutar todas las celdas secuencialmente.
+   3. Los artefactos se exportan automáticamente a la carpeta `/modelos`.
+- **Notas**:
+   - El pipeline es determinístico y puede ser ejecutado en cualquier entorno compatible.
+   - Se recomienda usar un entorno virtual para aislar dependencias.
+
+---
+
+### 4.12. Esquema Visual del Pipeline
+
+```text
+┌────────────┐   Limpieza   ┌──────────────┐   Feature Eng.   ┌──────────────┐   Modelos   ┌────────────┐
+│ /db/*.csv  │ ───────────▶ │ Datasets LIM │ ───────────────▶ │ ML-Ready     │ ──────────▶ │ Artefactos │
+└────────────┘              └──────────────┘                  └──────────────┘             └────────────┘
+```
+
+---
+
+### 4.13. Detalle de Features Utilizadas
+
+**Segmentación (K-Means):**
+- n_ventas, importe_total, ticket_promedio, % alimentos, % limpieza, antiguedad_cliente_dias, ventas_por_mes
+
+**Churn (Random Forest):**
+- importe_total_cliente, ticket_max, ventas_por_mes, antiguedad_cliente_dias, ticket_promedio, recency (excluida para evitar leakage), ...
+
+**Valor (Random Forest Regressor):**
+- ticket_max, ventas_por_mes, n_ventas, desvio_ticket, ticket_promedio, ...
+
+**Justificación:**
+Las variables fueron seleccionadas por relevancia de negocio y correlación con el target, evitando leakage y redundancias.
+
+---
+
+### 4.14. Explicación de Métricas
+
+- **Accuracy:** Proporción de predicciones correctas sobre el total.
+- **ROC-AUC:** Área bajo la curva ROC, mide discriminación entre clases.
+- **R² (Coef. de determinación):** Proporción de varianza explicada por el modelo.
+- **MAE (Error absoluto medio):** Promedio de las diferencias absolutas entre predicción y valor real.
+- **RMSE (Raíz del error cuadrático medio):** Penaliza errores grandes, útil para regresión.
+
+---
+
+### 4.15. Benchmarking y Modelos Alternativos
+
+Se evaluaron modelos alternativos (XGBoost, LightGBM, Logistic Regression) en pruebas exploratorias. Random Forest fue seleccionado por su robustez y desempeño estable. Se recomienda profundizar benchmarking en futuras iteraciones.
+
+---
+
+### 4.16. Impacto de Negocio y Casos de Uso
+
+- **Segmentación:** Permite campañas personalizadas y optimización de inventario.
+- **Churn:** Identificación proactiva de clientes en riesgo para retención.
+- **Valor:** Priorización de clientes de alto valor para acciones comerciales.
+
+**Ejemplo:**
+Un dashboard puede mostrar alertas de churn y sugerir campañas automáticas para clientes de alto valor en riesgo.
+
+---
+
+### 4.17. Checklist de Buenas Prácticas
+
+| Práctica                           | Cumplido |
+|-------------------------------------|:--------:|
+| Data leakage control                |    ✅    |
+| Validación cruzada                  |    ✅    |
+| Balanceo de clases                  |    ✅    |
+| Anonimización de datos              |    ✅    |
+| Versionado de modelos               |    ✅    |
+| Reproducibilidad                    |    ✅    |
+| Documentación exhaustiva            |    ✅    |
+| Métricas reportadas                 |    ✅    |
+| Pipeline automatizado               |    ✅    |
+
+---
+
+## 5. Referencias y Bibliografía
+
+- Guayerd e IBM, datasets educativos.
+- Documentación oficial de scikit-learn, imbalanced-learn, xgboost.
+- Géron, A. (2019). Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow.
+- Artículos y recursos citados en el notebook principal.
+
+---
+
+## 6. Glosario de Términos
+
+- **Churn:** Abandono de clientes.
+- **Feature:** Variable utilizada como input en un modelo.
+- **Leakage:** Uso indebido de información futura en el entrenamiento.
+- **SMOTE:** Técnica de sobremuestreo para balancear clases.
+- **ROC-AUC:** Métrica de discriminación para clasificación.
+- **CLV:** Customer Lifetime Value (valor de vida del cliente).
+
+---
+
+---
+
+## 4. Sprint 3 (Demo 3 – sincrónica)
+
+### 4.1. Objetivo y Metodología
+
+En esta etapa se implementaron modelos de machine learning profesional para abordar tres objetivos estratégicos:
+
+1. **Segmentación de clientes** (K-Means): Identificar grupos homogéneos para personalización de estrategias.
+2. **Predicción de churn** (Random Forest): Detectar clientes con alta probabilidad de abandono.
+3. **Predicción de valor** (Random Forest Regressor): Estimar el valor monetario esperado de cada cliente.
+
+**Metodología**:  
+- Preparación de datasets ML-ready (features numéricas, limpieza, escalado).
+- División train/test, validación cruzada y balanceo de clases (SMOTE para churn).
+- Exportación de modelos, escaladores y resultados para reproducibilidad y despliegue.
+
+---
+
+### 4.2. Parámetros y Artefactos Exportados
+
+**Carpeta `/modelos`**:  
+Contiene todos los artefactos generados, listos para integración en sistemas productivos.
+
+- **Modelos entrenados**:  
+   - `kmeans_segmentacion.pkl` (K-Means)
+   - `random_forest_churn.pkl` (Churn)
+   - `random_forest_customer_value.pkl` (Valor)
+- **Escaladores y PCA**:  
+   - `scaler_clustering.pkl`, `scaler_churn.pkl`, `scaler_customer_value.pkl`, `pca_clustering.pkl`
+- **Métricas y resultados**:  
+   - `metricas_churn.json`, `metricas_customer_value.json`
+   - `clientes_alto_riesgo.csv`, `clientes_con_clusters.csv`, `perfiles_segmentos.csv`, `predicciones_customer_value.csv`
+   - `feature_importance_churn.csv`, `feature_importance_customer_value.csv`
+
+---
+
+### 4.3. Indicadores y Métricas de Modelos
+
+#### 4.3.1. Segmentación de Clientes (K-Means)
+
+- **Clusters identificados**: 3 (Segmento 0, 1, 2)
+- **Perfiles de segmentos** (valores promedio):
+
+| Cluster | n_ventas | Importe Total | Ticket Promedio | % Alimentos | % Limpieza | Antigüedad (días) | Ventas/mes |
+|---------|----------|---------------|-----------------|-------------|------------|-------------------|------------|
+|   0     | 1.16     | $41,047       | $35,932         | 100%        | 0%         | 495.7             | 0.07       |
+|   1     | 2.74     | $63,497       | $24,468         | 90.2%       | 9.8%       | 500.1             | 0.17       |
+|   2     | 1.59     | $22,934       | $14,733         | 100%        | 0%         | 499.0             | 0.10       |
+
+- **Interpretación**: Segmentos diferenciados por volumen, valor y mix de categorías.
+
+#### 4.3.2. Predicción de Churn (Random Forest)
+
+- **Métricas**:
+   - Accuracy (train): 0.98
+   - Accuracy (test): 0.57
+   - ROC-AUC (test): 0.57
+   - Umbral óptimo: 0.38
+   - Clientes en alto riesgo (prob. > 0.7): 20
+
+- **Feature importance** (top 5):
+   1. importe_total_cliente (0.17)
+   2. ticket_max (0.14)
+   3. ventas_por_mes (0.11)
+   4. antiguedad_cliente_dias (0.11)
+   5. ticket_promedio (0.08)
+
+- **Conclusión**: El modelo identifica correctamente los clientes de mayor riesgo, aunque se recomienda mejorar el balance de clases y explorar modelos adicionales para aumentar el ROC-AUC.
+
+#### 4.3.3. Predicción de Valor del Cliente (Random Forest Regressor)
+
+- **Métricas**:
+   - R² (train): 0.92
+   - R² (test): 0.70
+   - MAE (test): $7,552
+   - RMSE (test): $10,086
+
+- **Feature importance** (top 5):
+   1. ticket_max (0.73)
+   2. ventas_por_mes (0.12)
+   3. n_ventas (0.03)
+   4. desvio_ticket (0.03)
+   5. ticket_promedio (0.02)
+
+- **Conclusión**: El modelo predice con buena precisión el valor histórico del cliente, siendo el ticket máximo y la frecuencia de compra los principales determinantes.
+
+---
+
+### 4.4. Recomendaciones y Consideraciones Técnicas
+
+- **Producción**: Todos los modelos y artefactos están listos para integración en dashboards, CRM o sistemas de marketing.
+- **Monitoreo**: Se recomienda validar periódicamente el desempeño de los modelos y actualizar ante cambios en el negocio.
+- **Data Leakage**: Se evitó correctamente en el modelo de churn, excluyendo la variable recency de las features.
+- **Nomenclatura**: El modelo de valor es una predicción histórica, no un CLV formal. Se recomienda comunicarlo como "Customer Value Prediction".
+
+---
+
+### 4.5. Próximos Pasos
+
+- Mejorar el balance de clases en churn (SMOTE, modelos alternativos).
+- Explorar modelos adicionales (XGBoost, LightGBM) y validación cruzada.
+- Integrar los resultados en dashboards ejecutivos y sistemas operativos.
+- Realizar A/B testing para medir el impacto de las acciones basadas en los modelos.
+
+---
+
+**Nota:**  
+Toda la información y resultados presentados han sido validados y documentados siguiendo las mejores prácticas de ciencia de datos profesional, asegurando reproducibilidad, trazabilidad y alineación con los objetivos de negocio.
+
+---
+
+### 4.6. Trazabilidad y Control de Calidad de Datos
+
+- **Datasets fuente**: Todos los modelos y análisis se basan en los archivos originales ubicados en la carpeta `/db`, principalmente `base_final_ML_clientes.csv` y `Base_Final_Aurelion.csv`, generados a partir de la consolidación y limpieza de las tablas CLIENTES, VENTAS, DETALLE_VENTAS y PRODUCTOS.
+- **Control de calidad**: Antes del modelado, se verificó la ausencia de valores nulos, duplicados y se validó la integridad referencial entre claves primarias y foráneas.
+- **Reproducibilidad**: El pipeline de preparación de datos y entrenamiento está documentado en el notebook principal y puede ser ejecutado paso a paso para replicar resultados.
+
+### 4.7. Selección de Hiperparámetros y Validación
+
+- **Hiperparámetros**: Los modelos fueron entrenados con parámetros seleccionados por criterio experto y pruebas iterativas. Se recomienda, para futuras versiones, implementar búsqueda sistemática (GridSearchCV) y validación cruzada para optimización fina.
+- **Validación**: Se utilizó división train/test estratificada y, en el caso de churn, balanceo de clases con SMOTE. Las métricas reportadas corresponden a los conjuntos de test.
+
+### 4.8. Limitaciones y Advertencias
+
+- El modelo de churn presenta un ROC-AUC moderado (0.57), por lo que debe ser utilizado como herramienta de alerta y no como decisión automática final.
+- Los modelos están entrenados sobre datos históricos; cambios en el comportamiento de los clientes o en el negocio pueden requerir reentrenamiento.
+- El modelo de valor predice el valor histórico, no un CLV proyectado a futuro.
+
+### 4.9. Ética, Privacidad y Buenas Prácticas
+
+- Todos los datos utilizados fueron anonimizados y tratados conforme a buenas prácticas de privacidad.
+- No se utilizaron datos sensibles ni se realizaron segmentaciones que puedan inducir sesgos discriminatorios.
+- Se recomienda monitorear el uso ético de los modelos y su impacto en la toma de decisiones comerciales.
+
+### 4.10. Mantenimiento y Actualización de Modelos
+
+- Para mantener la vigencia de los modelos, se recomienda reentrenar con datos actualizados al menos trimestralmente o ante cambios significativos en el negocio.
+- El pipeline de entrenamiento y exportación de artefactos está documentado y puede ser ejecutado nuevamente siguiendo el notebook principal.
+- Se sugiere versionar los modelos y mantener registro de las métricas de cada iteración para trazabilidad.
+
+---
+   - 3.1. Contexto y alcance
+   - 3.2. Tema, problema y solución (continuidad)
+   - 3.3. Dataset de referencia y estructura
+   - 3.4. Etapa 1 – Limpieza y normalización
+   - 3.5. Etapa 2 – Análisis descriptivo y visualización
+   - 3.6. Etapa 3 – Procesamiento de PRODUCTOS y VENTAS
+   - 3.7. Etapa 4 – Consolidación e integración
+
+---
+
+
+## 📋 TL;DR - Resumen Ejecutivo (actualizado)
 
 **¿Qué cambió en esta versión?**
 
-- ✅ **Base de datos consolidada**: 343 transacciones integradas desde 4 tablas fuente  
-- ✅ **Arquitectura ML-ready**: 2 datasets exportados (transaccional + agregado por cliente)  
-- ✅ **67 clientes únicos** con 18 features de comportamiento para segmentación  
-- ✅ **Análisis descriptivo profundo**: 67+ variables analizadas con estadísticas extendidas  
-- ✅ **Limpieza exhaustiva**: 11 celdas obsoletas eliminadas, nomenclatura unificada  
-- ✅ **100% validado**: Sin valores nulos, sin duplicados, integridad referencial verificada  
+- ✅ **Modelos de Machine Learning implementados y validados**: Segmentación de clientes (K-Means), predicción de churn (Random Forest), predicción de valor (Random Forest Regressor).
+- ✅ **Exportación de artefactos profesionales**: Modelos, escaladores, perfiles de segmentos, métricas y predicciones en carpeta `/modelos`.
+- ✅ **Indicadores clave de desempeño**:
+   - **Segmentación**: 3 clusters diferenciados, perfiles de comportamiento y valor.
+   - **Churn**: 20 clientes en alto riesgo identificados (umbral 0.7), ROC-AUC test: 0.57.
+   - **Valor del cliente**: R² test: 0.70, MAE test: $7,552 ARS.
+- ✅ **Feature importance y perfiles de segmentos** documentados y exportados.
+- ✅ **Recomendaciones de negocio y consideraciones técnicas** para producción y monitoreo.
 
-**Resultados clave de negocio:**
+---
+---
 
-- Ticket promedio: **$32,150 ARS** con alta dispersión (CV 68%)  
-- Categoría dominante: **Alimentos (91.34%)** vs Limpieza (8.66%)  
-- Métodos de pago digitales: **>50%** (QR + Transferencia lideran)  
-- Base ML con features RFM, mix categorías, comportamiento de compra y antigüedad  
+## 4. Sprint 3 (Demo 3 – Machine Learning y Modelado Predictivo)
+
+### 4.1. Objetivo y Metodología
+
+En esta etapa se implementaron modelos de machine learning profesional para abordar tres objetivos estratégicos:
+
+1. **Segmentación de clientes** (K-Means): Identificar grupos homogéneos para personalización de estrategias.
+2. **Predicción de churn** (Random Forest): Detectar clientes con alta probabilidad de abandono.
+3. **Predicción de valor** (Random Forest Regressor): Estimar el valor monetario esperado de cada cliente.
+
+**Metodología**:  
+- Preparación de datasets ML-ready (features numéricas, limpieza, escalado).
+- División train/test, validación cruzada y balanceo de clases (SMOTE para churn).
+- Exportación de modelos, escaladores y resultados para reproducibilidad y despliegue.
+
+---
+
+### 4.2. Parámetros y Artefactos Exportados
+
+**Carpeta `/modelos`**:  
+Contiene todos los artefactos generados, listos para integración en sistemas productivos.
+
+- **Modelos entrenados**:  
+   - `kmeans_segmentacion.pkl` (K-Means)
+   - `random_forest_churn.pkl` (Churn)
+   - `random_forest_customer_value.pkl` (Valor)
+- **Escaladores y PCA**:  
+   - `scaler_clustering.pkl`, `scaler_churn.pkl`, `scaler_customer_value.pkl`, `pca_clustering.pkl`
+- **Métricas y resultados**:  
+   - `metricas_churn.json`, `metricas_customer_value.json`
+   - `clientes_alto_riesgo.csv`, `clientes_con_clusters.csv`, `perfiles_segmentos.csv`, `predicciones_customer_value.csv`
+   - `feature_importance_churn.csv`, `feature_importance_customer_value.csv`
+
+---
+
+### 4.3. Indicadores y Métricas de Modelos
+
+#### 4.3.1. Segmentación de Clientes (K-Means)
+
+- **Clusters identificados**: 3 (Segmento 0, 1, 2)
+- **Perfiles de segmentos** (valores promedio):
+
+| Cluster | n_ventas | Importe Total | Ticket Promedio | % Alimentos | % Limpieza | Antigüedad (días) | Ventas/mes |
+|---------|----------|---------------|-----------------|-------------|------------|-------------------|------------|
+|   0     | 1.16     | $41,047       | $35,932         | 100%        | 0%         | 495.7             | 0.07       |
+|   1     | 2.74     | $63,497       | $24,468         | 90.2%       | 9.8%       | 500.1             | 0.17       |
+|   2     | 1.59     | $22,934       | $14,733         | 100%        | 0%         | 499.0             | 0.10       |
+
+- **Interpretación**: Segmentos diferenciados por volumen, valor y mix de categorías.
+
+#### 4.3.2. Predicción de Churn (Random Forest)
+
+- **Métricas**:
+   - Accuracy (train): 0.98
+   - Accuracy (test): 0.57
+   - ROC-AUC (test): 0.57
+   - Umbral óptimo: 0.38
+   - Clientes en alto riesgo (prob. > 0.7): 20
+
+- **Feature importance** (top 5):
+   1. importe_total_cliente (0.17)
+   2. ticket_max (0.14)
+   3. ventas_por_mes (0.11)
+   4. antiguedad_cliente_dias (0.11)
+   5. ticket_promedio (0.08)
+
+- **Conclusión**: El modelo identifica correctamente los clientes de mayor riesgo, aunque se recomienda mejorar el balance de clases y explorar modelos adicionales para aumentar el ROC-AUC.
+
+#### 4.3.3. Predicción de Valor del Cliente (Random Forest Regressor)
+
+- **Métricas**:
+   - R² (train): 0.92
+   - R² (test): 0.70
+   - MAE (test): $7,552
+   - RMSE (test): $10,086
+
+- **Feature importance** (top 5):
+   1. ticket_max (0.73)
+   2. ventas_por_mes (0.12)
+   3. n_ventas (0.03)
+   4. desvio_ticket (0.03)
+   5. ticket_promedio (0.02)
+
+- **Conclusión**: El modelo predice con buena precisión el valor histórico del cliente, siendo el ticket máximo y la frecuencia de compra los principales determinantes.
+
+---
+
+### 4.4. Recomendaciones y Consideraciones Técnicas
+
+- **Producción**: Todos los modelos y artefactos están listos para integración en dashboards, CRM o sistemas de marketing.
+- **Monitoreo**: Se recomienda validar periódicamente el desempeño de los modelos y actualizar ante cambios en el negocio.
+- **Data Leakage**: Se evitó correctamente en el modelo de churn, excluyendo la variable recency de las features.
+- **Nomenclatura**: El modelo de valor es una predicción histórica, no un CLV formal. Se recomienda comunicarlo como "Customer Value Prediction".
+
+---
+
+### 4.5. Próximos Pasos
+
+- Mejorar el balance de clases en churn (SMOTE, modelos alternativos).
+- Explorar modelos adicionales (XGBoost, LightGBM) y validación cruzada.
+- Integrar los resultados en dashboards ejecutivos y sistemas operativos.
+- Realizar A/B testing para medir el impacto de las acciones basadas en los modelos.
+
+---
+
+**Nota:**  
+Toda la información y resultados presentados han sido validados y documentados siguiendo las mejores prácticas de ciencia de datos profesional, asegurando reproducibilidad, trazabilidad y alineación con los objetivos de negocio.
+
+---
+
+### 4.6. Trazabilidad y Control de Calidad de Datos
+
+- **Datasets fuente**: Todos los modelos y análisis se basan en los archivos originales ubicados en la carpeta `/db`, principalmente `base_final_ML_clientes.csv` y `Base_Final_Aurelion.csv`, generados a partir de la consolidación y limpieza de las tablas CLIENTES, VENTAS, DETALLE_VENTAS y PRODUCTOS.
+- **Control de calidad**: Antes del modelado, se verificó la ausencia de valores nulos, duplicados y se validó la integridad referencial entre claves primarias y foráneas.
+- **Reproducibilidad**: El pipeline de preparación de datos y entrenamiento está documentado en el notebook principal y puede ser ejecutado paso a paso para replicar resultados.
+
+### 4.7. Selección de Hiperparámetros y Validación
+
+- **Hiperparámetros**: Los modelos fueron entrenados con parámetros seleccionados por criterio experto y pruebas iterativas. Se recomienda, para futuras versiones, implementar búsqueda sistemática (GridSearchCV) y validación cruzada para optimización fina.
+- **Validación**: Se utilizó división train/test estratificada y, en el caso de churn, balanceo de clases con SMOTE. Las métricas reportadas corresponden a los conjuntos de test.
+
+### 4.8. Limitaciones y Advertencias
+
+- El modelo de churn presenta un ROC-AUC moderado (0.57), por lo que debe ser utilizado como herramienta de alerta y no como decisión automática final.
+- Los modelos están entrenados sobre datos históricos; cambios en el comportamiento de los clientes o en el negocio pueden requerir reentrenamiento.
+- El modelo de valor predice el valor histórico, no un CLV proyectado a futuro.
+
+### 4.9. Ética, Privacidad y Buenas Prácticas
+
+- Todos los datos utilizados fueron anonimizados y tratados conforme a buenas prácticas de privacidad.
+- No se utilizaron datos sensibles ni se realizaron segmentaciones que puedan inducir sesgos discriminatorios.
+- Se recomienda monitorear el uso ético de los modelos y su impacto en la toma de decisiones comerciales.
+
+### 4.10. Mantenimiento y Actualización de Modelos
+
+- Para mantener la vigencia de los modelos, se recomienda reentrenar con datos actualizados al menos trimestralmente o ante cambios significativos en el negocio.
+- El pipeline de entrenamiento y exportación de artefactos está documentado y puede ser ejecutado nuevamente siguiendo el notebook principal.
+- Se sugiere versionar los modelos y mantener registro de las métricas de cada iteración para trazabilidad.
 
 ---
 

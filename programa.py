@@ -239,7 +239,124 @@ def construir_estructura_menus(secciones: Dict[str, str]) -> OpcionMenu:
     if sprint2:
         menu_raiz.hijos.append(sprint2)
 
+
+    # Construir Sprint 3 (Machine Learning y Modelado Predictivo)
+    sprint3 = construir_submenu_sprint3(secciones)
+    if sprint3:
+        menu_raiz.hijos.append(sprint3)
+
+    # Referencias y Glosario
+    k_refs = _find_first_key_by_tokens(secciones, ["referencia"])
+    if k_refs:
+        menu_raiz.hijos.append(OpcionMenu(
+            clave=k_refs, etiqueta="Referencias y Bibliografía", icono="📚", tipo=TipoOpcion.CONTENIDO,
+            descripcion="Fuentes, bibliografía y recursos utilizados"
+        ))
+    k_glos = _find_first_key_by_tokens(secciones, ["glosario"])
+    if k_glos:
+        menu_raiz.hijos.append(OpcionMenu(
+            clave=k_glos, etiqueta="Glosario de Términos", icono="📝", tipo=TipoOpcion.CONTENIDO,
+            descripcion="Definiciones de términos técnicos y de negocio"
+        ))
+
     return menu_raiz
+
+
+def construir_submenu_sprint3(secciones: Dict[str, str]) -> Optional[OpcionMenu]:
+    """Construye el submenú completo del Sprint 3 con todas las nuevas secciones y subapartados."""
+    # Buscar clave base de Sprint 3
+    clave_base = None
+    for k in secciones:
+        kn = _normalize_for_match(k)
+        partes = k.split('_')
+        if re.match(r"^4_.*sprint.*3", kn) and len(partes) == 6:
+            clave_base = k
+            break
+    if not clave_base:
+        return None
+
+    sprint3 = OpcionMenu(
+        clave=clave_base,
+        etiqueta="Sprint 3 (Demo 3 – Machine Learning y Modelado Predictivo)",
+        icono="3️⃣",
+        tipo=TipoOpcion.SUBMENU,
+        descripcion="Modelado predictivo, métricas, artefactos y mejores prácticas"
+    )
+
+    # Ver Sprint 3 completo
+    sprint3.hijos.append(OpcionMenu(
+        clave=clave_base,
+        etiqueta="Ver Sprint 3 Completo",
+        icono="📖",
+        tipo=TipoOpcion.CONTENIDO,
+        descripcion="Todo el contenido del Sprint 3 en una sola vista"
+    ))
+
+    # Buscar todas las subsecciones H3 de Sprint 3
+    subsecciones = []
+    for k in secciones:
+        if k.startswith(clave_base + "_") and k.count("_") == 9:  # H3 subsections
+            titulo = _get_title_from_content(secciones[k])
+            if titulo:
+                # Determinar icono
+                icono = "📄"
+                t = titulo.lower()
+                if "objetivo" in t:
+                    icono = "🎯"
+                elif "parámetro" in t or "artefacto" in t:
+                    icono = "🗃️"
+                elif "indicador" in t or "métrica" in t:
+                    icono = "📊"
+                elif "recomendación" in t or "consideración" in t:
+                    icono = "💡"
+                elif "próximo" in t:
+                    icono = "⏭️"
+                elif "trazabilidad" in t or "calidad" in t:
+                    icono = "🔎"
+                elif "hiperparámetro" in t or "validación" in t:
+                    icono = "⚙️"
+                elif "limitación" in t or "advertencia" in t:
+                    icono = "⚠️"
+                elif "ética" in t or "privacidad" in t:
+                    icono = "🔐"
+                elif "mantenimiento" in t or "actualización" in t:
+                    icono = "🔄"
+                elif "reproducibilidad" in t or "entorno" in t:
+                    icono = "🖥️"
+                elif "esquema" in t:
+                    icono = "🗺️"
+                elif "feature" in t:
+                    icono = "🧩"
+                elif "explicación" in t or "métrica" in t:
+                    icono = "📏"
+                elif "benchmark" in t or "alternativo" in t:
+                    icono = "🏁"
+                elif "impacto" in t or "caso de uso" in t:
+                    icono = "🚀"
+                elif "checklist" in t or "práctica" in t:
+                    icono = "✅"
+                subsecciones.append((k, titulo, icono))
+
+    # Ordenar por código numérico
+    def _num_key(label: str) -> Tuple:
+        m = re.match(r"^\s*(\d+(?:\.\d+)+)", label)
+        if not m:
+            return (999,)
+        return tuple(int(x) for x in m.group(1).split('.'))
+
+    subsecciones.sort(key=lambda x: _num_key(x[1]))
+
+    # Agregar subsecciones
+    for clave, etiqueta, icono in subsecciones:
+        sprint3.hijos.append(OpcionMenu(
+            clave=clave,
+            etiqueta=etiqueta,
+            icono=icono,
+            tipo=TipoOpcion.CONTENIDO,
+            descripcion=""
+        ))
+
+    return sprint3
 
 
 def construir_submenu_sprint1(secciones: Dict[str, str]) -> Optional[OpcionMenu]:

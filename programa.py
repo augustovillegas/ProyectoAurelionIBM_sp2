@@ -4,7 +4,7 @@
 """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║                   🏪  PROYECTO AURELION - VISOR INTERACTIVO  🏪               ║
+║                   🏪  PROYECTO AURELION - VISOR INTERACTIVO  🏪              ║
 ║                                                                               ║
 ║                         Sistema de Navegación Multinivel                      ║
 ║                              Documentación Técnica                            ║

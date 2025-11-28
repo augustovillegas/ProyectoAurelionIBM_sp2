@@ -1,7 +1,7 @@
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
-║                   🏪  PROYECTO AURELION - IBM & GUAYERD  🏪                   ║
+║                   🏪  PROYECTO AURELION - IBM & GUAYERD  🏪                  ║
 ║                                                                               ║
 ║                         Documentación Técnica Completa                        ║
 ║                              Análisis de Datos                                ║

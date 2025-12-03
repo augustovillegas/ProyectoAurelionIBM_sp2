@@ -663,10 +663,10 @@ def construir_submenu_etapa(secciones: Dict[str, str], clave_sprint: str,
 def mostrar_header():
     """Muestra el encabezado principal del programa."""
     if ASCII_MODE:
-        print("\n" + "=" * 80)
-        print(" PROYECTO AURELION - VISOR DE DOCUMENTACION TECNICA ".center(80, "="))
-        print(" IBM & Guayerd · Analisis de Datos Retail · 2025 ".center(80))
-        print("=" * 80)
+        print("\n" + "=" * 78)
+        print(" PROYECTO AURELION - VISOR DE DOCUMENTACION TECNICA ".center(78, "="))
+        print(" IBM & Guayerd · Analisis de Datos Retail · 2025 ".center(78))
+        print("=" * 78)
         return
     print("\n" + "╔" + "═" * 78 + "╗")
     print("║" + " 🏪  PROYECTO AURELION - VISOR DE DOCUMENTACIÓN TÉCNICA  🏪 ".center(78) + "║")
@@ -681,7 +681,7 @@ def mostrar_breadcrumbs(ruta: List[str]):
         return
     
     print("\n📍 Ubicación: " + " → ".join(ruta))
-    print("─" * 80)
+    print("─" * 78)
 
 
 def mostrar_menu(opciones: List[OpcionMenu], ruta: List[str]):
@@ -720,14 +720,14 @@ def mostrar_menu(opciones: List[OpcionMenu], ruta: List[str]):
     print("└" + "─" * 78 + "┘")
     
     # Opciones de navegación
-    print("\n" + "═" * 80)
+    print("\n" + "═" * 78)
     if len(ruta) > 1:
         print("  [0] ⬅️  Volver al menú anterior", end="")
     else:
         print("  [Q] 🚪 Salir del programa", end="")
     
     print("  │  [R] 🔄 Recargar documentación")
-    print("═" * 80)
+    print("═" * 78)
 
 
 def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
@@ -744,45 +744,58 @@ def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
     mostrar_breadcrumbs(ruta)
     
     if ASCII_MODE:
-        print("\n" + "=" * 80)
-        print(f" {titulo} ".center(80, "="))
-        print("=" * 80 + "\n")
+        print("\n" + "=" * 78)
+        print(f" {titulo} ".center(78, "="))
+        print("=" * 78 + "\n")
     else:
         print("\n" + "╔" + "═" * 78 + "╗")
         print("║" + f" {titulo} ".center(78) + "║")
         print("╚" + "═" * 78 + "╝\n")
     
-    # Mostrar contenido con scroll y bloques de output destacados
+    # Mostrar contenido con scroll y bloques de output destacados (mejorado)
     lineas = contenido.split('\n')
     in_output_block = False
     output_buffer = []
+    last_section_header = None
+    FRAME_WIDTH = 78  # ancho interno del marco para mejor legibilidad
     max_lines = 80
     shown = 0
     for linea in lineas:
+        stripped = linea.strip()
+        # Capturar el último encabezado markdown para título contextual
+        if re.match(r'^#{2,4}\s+.+', stripped):
+            last_section_header = re.sub(r'^#{2,4}\s+', '', stripped)
+
         # Detectar inicio de bloque de output
-        if linea.strip().startswith('```output'):
+        if stripped.startswith('```output'):
             in_output_block = True
             output_buffer = []
             continue
         # Detectar fin de bloque de output
-        if in_output_block and linea.strip() == '```':
+        if in_output_block and stripped == '```':
+            # Construir título del bloque
+            titulo_bloque = 'Resultado'
+            if last_section_header:
+                titulo_bloque = f"Resultado · {last_section_header}"
+
             # Mostrar el bloque de output con formato especial
             if ASCII_MODE:
-                print("\n" + "-" * 76)
-                print(" OUTPUT DEL NOTEBOOK ".center(76, "-"))
+                print('\n' + '-' * FRAME_WIDTH)
+                print(f" {titulo_bloque} ".center(FRAME_WIDTH, '-'))
             else:
-                print('\n' + '╔' + '═' * 76 + '╗')
-                print('║' + ' OUTPUT DEL NOTEBOOK '.center(76) + '║')
-                print('╠' + '═' * 76 + '╣')
+                print('\n' + '╔' + '═' * FRAME_WIDTH + '╗')
+                print('║' + f" {titulo_bloque} ".center(FRAME_WIDTH) + '║')
+                print('╠' + '═' * FRAME_WIDTH + '╣')
             for out_line in output_buffer:
-                # Ajustar ancho y márgenes
-                for subline in out_line.split('\n'):
+                # Ajustar ancho y márgenes, envolver líneas largas
+                sublines = [out_line[i:i+FRAME_WIDTH] for i in range(0, len(out_line), FRAME_WIDTH)] or ['']
+                for subline in sublines:
                     if ASCII_MODE:
-                        print(subline[:74])
+                        print(subline)
                     else:
-                        print('║ ' + subline[:74].ljust(74) + ' ║')
+                        print('║ ' + subline.ljust(FRAME_WIDTH - 2) + ' ║')
             if not ASCII_MODE:
-                print('╚' + '═' * 76 + '╝\n')
+                print('╚' + '═' * FRAME_WIDTH + '╝\n')
             in_output_block = False
             output_buffer = []
             continue
@@ -798,7 +811,7 @@ def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
                     return
                 shown = 0
     
-    print("\n" + ("=" * 80 if ASCII_MODE else "═" * 80))
+    print("\n" + ("=" * 78 if ASCII_MODE else "═" * 78))
     pausar()
 
 
@@ -934,44 +947,21 @@ class NavegadorMenus:
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FUNCIÓN PRINCIPAL
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
-    """Función principal del programa."""
-    global DEMO_MODE, ASCII_MODE
-    DEMO_MODE = any(arg.lower() in ("--demo", "--auto") for arg in sys.argv[1:])
-
-    # Forzar UTF-8 y detectar necesidad de modo ASCII
-    for stream in (sys.stdout, sys.stderr):
-        try:
-            stream.reconfigure(encoding="utf-8", errors="replace")
-        except Exception:
-            pass
-    encoding = (sys.stdout.encoding or "").lower()
-    ASCII_MODE = "utf" not in encoding
-
-    limpiar_pantalla()
-    
-    # Cargar documentación
-    print("\n🔄 Cargando DOCUMENTACION.md...")
+    mostrar_mensaje("Cargando documentación...", "info")
     md = cargar_documentacion(RUTA_DOC)
-    
     if not md:
-        print("\n❌ No se pudo cargar la documentación. Verifica que el archivo exista.")
-        sys.exit(1)
-    
-    # Parsear secciones
-    print("📖 Parseando secciones...")
+        mostrar_mensaje("No se pudo cargar DOCUMENTACION.md", "error")
+        return
+
     secciones = parsear_secciones(md)
     print(f"ℹ️ Secciones detectadas: {len(secciones)}")
-    
-    if not secciones:
-        print("\n❌ No se pudieron detectar secciones en la documentación.")
-        sys.exit(1)
 
-    # Validación básica de presencia de capítulos clave
+    # Validar presencia de secciones clave
     requeridas = {
-        "TLDR": _find_first_key_by_tokens(secciones, ["TLDR"]),
+        "DOC_COMPLETA": secciones.get("DOC_COMPLETA"),
+        "INTRO": secciones.get("INTRO"),
         "SPRINT1": _find_first_key_by_tokens(secciones, ["sprint", "1"]),
         "SPRINT2": _find_first_key_by_tokens(secciones, ["sprint", "2"]),
         "SPRINT3": _find_first_key_by_tokens(secciones, ["sprint", "3"]),

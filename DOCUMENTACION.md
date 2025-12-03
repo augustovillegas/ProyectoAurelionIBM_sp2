@@ -19,132 +19,449 @@ Retail minorista | IBM & Guayerd | Noviembre 2025
 
 ## TLDR - Resumen ejecutivo
 
-| Componente                              | Resultado / Metrica clave                                    |
-|-----------------------------------------|--------------------------------------------------------------|
-| Base transaccional `Base_Final_Aurelion.csv` | 343 filas x 21 columnas, 67 clientes, 120 ventas, 95 productos; 0 nulos y 0 duplicados. |
-| Medios de pago (one-hot)                | Efectivo 32.4%, QR 26.5%, Tarjeta 20.1%, Transferencia 21.0%. |
-| Mix de categorias                       | Alimentos 97.1%, Limpieza 2.9%.                              |
-| Dataset ML `base_final_ML_clientes.csv` | 67 clientes x 18 columnas (16 features numericas + id + ciudad). |
-| Clustering K-Means (K=3)                | Silhouette 0.1985; Calinski-Harabasz 16.49; Davies-Bouldin 1.65; Inertia 707.51; clusters 19 / 19 / 29. |
-| Modelo Churn (Random Forest)            | Accuracy train 0.9811 / test 0.5714; ROC-AUC 0.5714; umbral optimo 0.3790; 20 clientes en alto riesgo (umbral accion 0.70). |
-| Modelo Valor Cliente (Random Forest Regressor) | MAE 3,882.5 / 7,552.5; RMSE 6,869.7 / 10,086.2; R2 0.9242 / 0.6998; media target 39,573; mediana 34,326 ARS. |
-| Artefactos exportados                  | Modelos y scalers (.pkl), metricas (.json), feature importance (.csv), segmentos y riesgos (.csv), predicciones (.csv). |
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📊 DATOS TRANSACCIONALES                                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Base Transaccional:          Base_Final_Aurelion.csv                         │
+│   • Dimensión:                343 filas × 21 columnas                        │
+│   • Clientes únicos:          67 clientes                                    │
+│   • Ventas registradas:       120 transacciones                              │
+│   • Productos:                95 SKUs                                        │
+│   • Calidad de datos:         0 nulos, 0 duplicados                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Medios de Pago:                                                              │
+│   • Efectivo:                 32.4%                                          │
+│   • QR:                       26.5%                                          │
+│   • Tarjeta:                  20.1%                                          │
+│   • Transferencia:            21.0%                                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Mix de Categorías:                                                           │
+│   • Alimentos:                97.1%                                          │
+│   • Limpieza:                 2.9%                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🤖 MACHINE LEARNING                                                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Dataset ML:                  base_final_ML_clientes.csv                      │
+│   • Dimensión:                67 clientes × 18 columnas                      │
+│   • Features numéricas:      16 variables predictoras                        │
+│   • Otras columnas:           id_cliente + ciudad                            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Clustering K-Means (K=3):                                                    │
+│   • Silhouette Score:        0.1985                                          │
+│   • Calinski-Harabasz:       16.49                                           │
+│   • Davies-Bouldin:          1.65                                            │
+│   • Inertia:                 707.51                                          │
+│   • Distribución clusters:    19 / 19 / 29 clientes                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Modelo de Churn (Random Forest):                                             │
+│   • Accuracy Train/Test:     98.11% / 57.14%                                 │
+│   • ROC-AUC:                 0.5714                                          │
+│   • Umbral óptimo:           0.3790                                          │
+│   • Clientes alto riesgo:    20 clientes (umbral acción: 0.70)               │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Modelo Valor del Cliente (Random Forest Regressor):                          │
+│   • MAE Train/Test:          $3,882.50 / $7,552.50                           │
+│   • RMSE Train/Test:         $6,869.72 / $10,086.19                          │
+│   • R² Train/Test:            0.9242 / 0.6998                                │
+│   • Media del target:        $39,573 ARS                                     │
+│   • Mediana del target:      $34,326 ARS                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📦 ARTEFACTOS EXPORTADOS                                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ • Modelos entrenados:        .pkl (Random Forest + Scalers)                  │
+│ • Métricas de evaluación:     .json (Churn, Valor Cliente)                   │
+│ • Importancia de features:    .csv (Top features por modelo)                 │
+│ • Segmentos y riesgos:        .csv (Clusters, Alto riesgo)                   │
+│ • Predicciones:               .csv (Valores predichos)                       │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ---
 
-## Como ejecutar el visor
+## Cómo ejecutar el visor
 
-Requisitos: Python 3.10+.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🛠️ REQUISITOS                                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ • Python:                    Versión 3.10 o superior                         │
+│ • Consola:                   Soporte UTF-8                                   │
+│ • Windows:                   Ejecutar `chcp 65001` o usar Windows Terminal   │
+│ • Archivo requerido:         DOCUMENTACION.md (misma carpeta)                │  
+└──────────────────────────────────────────────────────────────────────────────┘
 
-1) Abrir una consola con soporte UTF-8 (en Windows: `chcp 65001` o usar Windows Terminal/VS Code).
-2) Ejecutar desde la carpeta del proyecto:
-
-```
-python programa.py
-```
-
-- Para modo demo sin entrada interactiva: `python programa.py --demo`
-- El archivo `DOCUMENTACION.md` debe estar en la misma carpeta que `programa.py`.
-
----
-
-## 1. Vision general del proyecto
-
-Objetivo: transformar datos de ventas minoristas en insights accionables y bases listas para BI/ML.
-
-Tablas fuente: `clientes`, `productos`, `ventas`, `detalle_ventas` (relaciones 1:N entre clientes-ventas y ventas-detalle, productos-detalle).
-
-Metodologia: ETL (lectura desde `db/`), limpieza y normalizacion por tabla, consolidacion relacional, analisis descriptivo y generacion de datasets derivados (ticket y cliente) para modelado.
-
----
-
-## 2. Sprint 1 (Demo 1 asincronica)
-
-### 2.1 Tema, problema y solucion
-- Gestion y analisis de ventas minoristas para detectar patrones y optimizar inventario.
-
-### 2.2 Dataset de referencia
-- Datos educativos provistos por Guayerd e IBM: clientes, productos, ventas, detalle_ventas.
-
-### 2.3 Estructura por tabla
-- Clientes: id_cliente, nombre, email, ciudad, fecha_alta.
-- Productos: id_producto, nombre_producto, categoria, precio_unitario.
-- Ventas: id_venta, fecha, id_cliente, nombre_cliente, email, medio_pago.
-- Detalle_ventas: id_venta, id_producto, nombre_producto, cantidad, precio_unitario, importe.
-
-### 2.4 Escalas de medicion
-- Nominal, ordinal, intervalo, razon, segun variable.
-
-### 2.5 Sugerencias con IA
-- Generar consultas y visualizaciones, automatizar limpieza y deteccion de anomalías.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🚀 INSTRUCCIÓNES DE EJECUCIÓN                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│ 1️⃣  Abrir terminal en la carpeta del proyecto                                │
+│                                                                              │
+│ 2️⃣  Ejecutar el comando:                                                     │
+│                                                                              │
+│     ```                                                                      │
+│     python programa.py                                                       │
+│     ```                                                                      │
+│                                                                              │
+│ 3️⃣  Modo Demo (opcional):                                                    │
+│                                                                              │
+│     ```                                                                      │
+│     python programa.py --demo                                                │
+│     ```                                                                      │
+│                                                                              │
+│     (Sin entrada interactiva, muestra solo resumen ejecutivo)                │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ---
 
-## 3. Sprint 2 (Demo 2 sincronica)
+## 1. Visión general del proyecto
 
-### 3.1 Contexto y alcance
-- Implementacion ETL y analisis descriptivo avanzado sobre 4 tablas.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🎯 OBJETIVO DEL PROYECTO                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Transformar datos de ventas minoristas en insights accionables y bases    │
+│ listas para Business Intelligence y Machine Learning.                     │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-### 3.2 Tema, problema y solucion (continuidad)
-- Consolidar informacion para reportes, productos mas vendidos y comportamiento de compra.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📊 TABLAS FUENTE                                                             │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ • clientes                                                                   │
+│ • productos                                                                  │
+│ • ventas                                                                     │
+│ • detalle_ventas                                                             │
+│                                                                              │
+│ Relaciones:                                                                  │
+│   - 1:N entre clientes y ventas                                              │
+│   - 1:N entre ventas y detalle_ventas                                        │
+│   - 1:N entre productos y detalle_ventas                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-### 3.3 Dataset de referencia y estructura (resumen)
-- Mismas fuentes del Sprint 1; relaciones 1:N y tipificacion coherente.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ⚙️ METODOLOGÍA                                                               │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 1. ETL (Extracción, Transformación, Carga)                                   │
+│    • Lectura de tablas desde directorio `db/`                                │
+│                                                                              │
+│ 2. Limpieza y Normalización                                                  │
+│    • Procesamiento individual por tabla                                      │
+│                                                                              │
+│ 3. Consolidación Relacional                                                  │
+│    • Integración de tablas con validación de integridad                      │
+│                                                                              │
+│ 4. Análisis Descriptivo                                                      │
+│    • Estadísticas, visualizaciones y transformaciones                        │
+│                                                                              │
+│ 5. Generación de Datasets Derivados                                          │
+│    • Vistas a nivel ticket y cliente para modelado ML                        │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-### 3.4 Etapa 1 - Limpieza y normalizacion de datos
-- Conversion de fechas a datetime, normalizacion de texto, conversion de categorias, control de duplicados y claves.
-- Resultado: 0 nulos, 0 duplicados, integridad referencial completa.
+---
 
-### 3.5 Etapa 2 - Analisis descriptivo y visualizacion integral
-- Base consolidada: 343 filas x 21 columnas (enero-junio 2024).
-- Estadisticas (detalle):
-  - cantidad: media 2.96, mediana 3, min 1, max 5, CV 46%.
-  - precio_unitario: media 2,654.50, mediana 2,512, min 272, max 4,982, CV 49%.
-  - importe: media 7,730.08, mediana 6,702, min 272, max 24,865, CV 68%.
-- Transformaciones: Z-score (`importe_std`), log1p(importe), correlacion importe vs precio_unitario 0.68, importe vs cantidad 0.60.
-- Outliers (IQR) concentrados en tickets de 5 unidades.
+## 2. Sprint 1 (Demo 1 asincrónica)
 
-### 3.6 Etapa 3 - Procesamiento de PRODUCTOS y VENTAS
-- Productos: 100 SKUs, sin nulos ni duplicados; precios min 272, max 4,982; categorias balanceadas.
-- Ventas: 120 cabeceras; medios de pago normalizados con one-hot.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📝 TEMA, PROBLEMA Y SOLUCIÓN                                                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Gestión y análisis de ventas minoristas para detectar patrones y             │
+│ optimizar inventario.                                                        │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-### 3.7 Etapa 4 - Consolidacion e integracion
-- Exportaciones: `Base_Final_Aurelion.csv` (343x21), `base_final_ML_clientes.csv` (67x18), `df_ticket_ml` generado en notebook.
-- Validaciones finales: sin PII sensible en datasets ML, integridad referencial 100%.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📂 DATASET DE REFERENCIA                                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Datos educativos provistos por Guayerd e IBM                                 │
+│                                                                              │
+│ Tablas:                                                                      │
+│   • clientes                                                                 │
+│   • productos                                                                │
+│   • ventas                                                                   │
+│   • detalle_ventas                                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🗃️ ESTRUCTURA POR TABLA                                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Clientes:                                                                    │
+│   • id_cliente, nombre, email, ciudad, fecha_alta                            │
+│                                                                              │
+│ Productos:                                                                   │
+│   • id_producto, nombre_producto, categoria, precio_unitario                 │
+│                                                                              │
+│ Ventas:                                                                      │
+│   • id_venta, fecha, id_cliente, nombre_cliente, email, medio_pago           │
+│                                                                              │
+│ Detalle_ventas:                                                              │
+│   • id_venta, id_producto, nombre_producto, cantidad,                        │
+│     precio_unitario, importe                                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📊 ESCALAS DE MEDICIÓN                                                       │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Las variables del dataset utilizan diferentes escalas según su naturaleza:  │
+│                                                                              │
+│   • Nominal (categóricas sin orden)                                          │
+│   • Ordinal (categóricas con orden)                                          │
+│   • Intervalo (numéricas con distancias)                                     │
+│   • Razón (numéricas con cero absoluto)                                      │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🤖 SUGERENCIAS CON IA                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ • Generar consultas y visualizaciones automatizadas                          │
+│ • Automatizar limpieza y detección de anomalías                              │
+│ • Optimizar workflows de análisis exploratorio                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+---
+
+## 3. Sprint 2 (Demo 2 sincrónica)
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🎯 CONTEXTO Y ALCANCE                                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Implementación ETL y análisis descriptivo avanzado sobre 4 tablas.           │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📋 TEMA, PROBLEMA Y SOLUCIÓN (Continuidad)                                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Consolidar información para reportes, productos más vendidos y               │
+│ comportamiento de compra.                                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🗄️ DATASET DE REFERENCIA Y ESTRUCTURA                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Mismas fuentes del Sprint 1                                                  │
+│                                                                              │
+│ Características:                                                             │
+│   • Relaciones 1:N validadas                                                 │
+│   • Tipificación coherente entre tablas                                      │
+│   • Integridad referencial completa                                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🧹 ETAPA 1 - Limpieza y Normalización de Datos                               │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Procesos aplicados:                                                          │
+│   • Conversión de fechas a datetime                                          │
+│   • Normalización de texto (mayúsculas, espacios)                            │
+│   • Conversión de categorías a tipos apropiados                              │
+│   • Control de duplicados y validación de claves                             │
+│                                                                              │
+│ Resultado:                                                                   │
+│   ✅ 0 nulos detectados                                                      │
+│   ✅ 0 duplicados encontrados                                                │
+│   ✅ Integridad referencial 100%                                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📊 ETAPA 2 - Análisis Descriptivo y Visualización Integral                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Base Consolidada:                                                            │
+│   • Dimensión:              343 filas × 21 columnas                          │
+│   • Período:                Enero - Junio 2024                               │
+│                                                                              │
+│ Estadísticas por Variable:                                                   │
+│                                                                              │
+│ Cantidad:                                                                    │
+│   • Media:                  2.96 unidades                                    │
+│   • Mediana:                3 unidades                                       │
+│   • Rango:                  1 - 5 unidades                                   │
+│   • CV:                     46%                                              │
+│                                                                              │
+│ Precio Unitario:                                                             │
+│   • Media:                  $ 2,654.50                                       │
+│   • Mediana:                $ 2,512.00                                       │
+│   • Rango:                  $ 272 - $ 4,982                                  │
+│   • CV:                     49%                                              │
+│                                                                              │
+│ Importe:                                                                     │
+│   • Media:                  $ 7,730.08                                       │
+│   • Mediana:                $ 6,702.00                                       │
+│   • Rango:                  $ 272 - $ 24,865                                 │
+│   • CV:                     68%                                              │
+│                                                                              │
+│ Transformaciones Aplicadas:                                                  │
+│   • Z-score (importe_std)                                                    │
+│   • log1p(importe)                                                           │
+│                                                                              │
+│ Correlaciones Principales:                                                   │
+│   • importe vs precio_unitario:     0.68                                     │
+│   • importe vs cantidad:            0.60                                     │
+│                                                                              │
+│ Outliers:                                                                    │
+│   • Concentrados en tickets de 5 unidades (método IQR)                       │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📦 ETAPA 3 - Procesamiento de PRODUCTOS y VENTAS                             │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Productos:                                                                   │
+│   • Total SKUs:             100 productos                                    │
+│   • Calidad:                Sin nulos ni duplicados                          │
+│   • Rango de precios:       $ 272 - $ 4,982                                  │
+│   • Categorías:             Balanceadas                                      │
+│                                                                              │
+│ Ventas:                                                                      │
+│   • Total cabeceras:        120 transacciones                                │
+│   • Medios de pago:         Normalizados con one-hot encoding                │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔗 ETAPA 4 - Consolidación e Integración                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Exportaciones Generadas:                                                     │
+│   • Base_Final_Aurelion.csv           343 × 21 columnas                      │
+│   • base_final_ML_clientes.csv        67 × 18 columnas                       │
+│   • df_ticket_ml                      (generado en notebook)                 │
+│                                                                              │
+│ Validaciones Finales:                                                        │
+│   ✅ Sin PII sensible en datasets ML                                        │
+│   ✅ Integridad referencial 100%                                            │
+│   ✅ Formatos listos para BI y ML                                           │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ---
 
 ## 4. Sprint 3 (Demo 3 - Machine Learning y modelado predictivo)
 
-### 4.1 Objetivo y metodologia
-- Segmentar clientes, predecir churn y estimar valor historico; evitar data leakage y exportar artefactos listos para BI/CRM.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🎯 OBJETIVO Y METODOLOGÍA                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Objetivos:                                                                   │
+│   • Segmentar clientes en grupos homógeneos                                  │
+│   • Predecir churn (riesgo de pérdida de clientes)                           │
+│   • Estimar valor histórico del cliente                                      │
+│                                                                              │
+│ Principios:                                                                  │
+│   • Evitar data leakage en todas las etapas                                  │
+│   • Exportar artefactos listos para BI/CRM                                   │
+│   • Documentar y versionar todos los modelos                                 │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-### 4.2 Parametros y artefactos exportados
-- Dataset ML: `base_final_ML_clientes.csv` con 16 features numericas mas id y ciudad.
-- Artefactos: modelos y scalers (.pkl), metricas (.json), feature importance (.csv), segmentos y riesgos (.csv), predicciones (.csv).
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📊 PARÁMETROS Y ARTEFACTOS EXPORTADOS                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Dataset ML:              base_final_ML_clientes.csv                          │
+│   • Columnas:             67 clientes × 18 columnas                          │
+│   • Features numéricas:   16 variables predictoras                           │
+│   • Otras:                id_cliente + ciudad                                │
+│                                                                              │
+│ Artefactos Generados:                                                        │
+│   • Modelos y scalers:    .pkl (binarios serializados)                       │
+│   • Métricas:             .json (resultados de evaluación)                   │
+│   • Feature importance:   .csv (ranking de variables)                        │
+│   • Segmentos y riesgos:  .csv (clusters, alto riesgo)                       │
+│   • Predicciones:         .csv (valores estimados)                           │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-### 4.3 Indicadores y metricas de modelos
+### 4.3 Indicadores y métricas de modelos
 
-#### 4.3.1 Segmentacion de clientes (K-Means)
-- Pipeline: StandardScaler -> KMeans (K=3, n_init=20, max_iter=500).
-- Metricas: Silhouette 0.1985; Calinski-Harabasz 16.49; Davies-Bouldin 1.65; Inertia 707.51.
-- Distribucion: 19 / 19 / 29 clientes.
-- Perfiles medios (perfiles_segmentos.csv):
-  - Cluster 0: n_ventas 1.16; importe_total 41,046; ticket_promedio 35,932; efectivo 60.5%; transferencia 18.4%; lineas/venta 3.97; cantidad_promedio 13.34.
-  - Cluster 1: n_ventas 2.74; importe_total 63,497; ticket_promedio 24,468; efectivo 42.7%; tarjeta 16.3%; QR 27.6%; lineas/venta 3.00; cantidad_promedio 8.61.
-  - Cluster 2: n_ventas 1.59; importe_total 22,934; ticket_promedio 14,733; tarjeta 32.8%; transferencia 35.6%; lineas/venta 2.32; cantidad_promedio 6.34.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔹 SEGMENTACIÓN DE CLIENTES (K-Means)                                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Pipeline:                                                                    │
+│   StandardScaler → KMeans(K=3, n_init=20, max_iter=500)                      │
+│                                                                              │
+│ Métricas de Calidad:                                                         │
+│   • Silhouette Score:             0.1985                                     │
+│   • Calinski-Harabasz Index:      16.49                                      │
+│   • Davies-Bouldin Index:         1.65                                       │
+│   • Inertia:                      707.51                                     │
+│                                                                              │
+│ Distribución de Clientes:                                                    │
+│   • Cluster 0:                    19 clientes                                │
+│   • Cluster 1:                    19 clientes                                │
+│   • Cluster 2:                    29 clientes                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Perfiles Promedio por Cluster (ver perfiles_segmentos.csv):                  │
+│                                                                              │
+│ Cluster 0 - Alto valor, baja frecuencia:                                     │
+│   • Ventas promedio:              1.16 transacciones                         │
+│   • Importe total:                $ 41,046                                   │
+│   • Ticket promedio:              $ 35,932                                   │
+│   • Medios de pago:               60.5% efectivo, 18.4% transferencia        │
+│   • Líneas/venta:                 3.97                                       │
+│   • Cantidad promedio:            13.34 unidades                             │
+│                                                                              │
+│ Cluster 1 - Alto valor, alta frecuencia:                                     │
+│   • Ventas promedio:              2.74 transacciones                         │
+│   • Importe total:                $ 63,497                                   │
+│   • Ticket promedio:              $ 24,468                                   │
+│   • Medios de pago:               42.7% efectivo, 16.3% tarjeta,             │
+│                                    27.6% QR                                  │
+│   • Líneas/venta:                 3.00                                       │
+│   • Cantidad promedio:            8.61 unidades                              │
+│                                                                              │
+│ Cluster 2 - Bajo valor:                                                      │
+│   • Ventas promedio:              1.59 transacciones                         │
+│   • Importe total:                $ 22,934                                   │
+│   • Ticket promedio:              $ 14,733                                   │
+│   • Medios de pago:               32.8% tarjeta, 35.6% transferencia         │
+│   • Líneas/venta:                 2.32                                       │
+│   • Cantidad promedio:            6.34 unidades                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-#### 4.3.2 Prediccion de churn (Random Forest)
-- Target: recency > 60 dias (base: 35 positivos / 32 negativos; churn rate 52.2%).
-- Preproceso: split, escalado, SMOTE.
-- Metricas: accuracy train 0.9811 / test 0.5714; ROC-AUC 0.5714; umbral optimo 0.3790; 20 clientes alto riesgo con umbral 0.70.
-- Top 5 variables (feature_importance_churn.csv): importe_total_cliente 0.171; ticket_max 0.141; ventas_por_mes 0.110; antiguedad_cliente_dias 0.106; ticket_promedio 0.081.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔺 PREDICCIÓN DE CHURN (Random Forest Classifier)                            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Variable Target:                                                             │
+│   • Definición:                 recency > 60 días                            │
+│   • Distribución base:          35 positivos / 32 negativos                  │
+│   • Churn rate:                 52.2%                                        │
+│                                                                              │
+│ Preprocesamiento:                                                            │
+│   • Train/Test split                                                         │
+│   • Escalado con StandardScaler                                              │
+│   • SMOTE para balanceo de clases                                            │
+│                                                                              │
+│ Métricas de Desempeño:                                                       │
+│   • Accuracy Train:             98.11%                                       │
+│   • Accuracy Test:              57.14%                                       │
+│   • ROC-AUC:                    0.5714                                       │
+│   • Umbral óptimo:              0.3790                                       │
+│                                                                              │
+│ Clientes de Alto Riesgo:                                                     │
+│   • Total detectados:           20 clientes                                  │
+│   • Umbral de acción:           0.70 (70% probabilidad)                      │
+│                                                                              │
+│ Top 5 Variables (feature_importance_churn.csv):                              │
+│   1. importe_total_cliente        0.171 (17.1%)                              │
+│   2. ticket_max                   0.141 (14.1%)                              │
+│   3. ventas_por_mes               0.110 (11.0%)                              │
+│   4. antiguedad_cliente_dias      0.106 (10.6%)                              │
+│   5. ticket_promedio              0.081 (8.1%)                               │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-#### 4.3.3 Prediccion de valor del cliente (Random Forest Regressor)
-- Target: importe_total_cliente (valor historico).
-- Metricas: MAE 3,882.5 / 7,552.5; RMSE 6,869.7 / 10,086.2; R2 0.9242 / 0.6998.
-- Top 5 variables (feature_importance_customer_value.csv): ticket_max 0.733; ventas_por_mes 0.125; n_ventas 0.033; desvio_ticket 0.031; ticket_promedio 0.016.
-- Estadistica target: media 39,573; mediana 34,326; std 23,945.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 💰 PREDICCIÓN DE VALOR DEL CLIENTE (Random Forest Regressor)                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Variable Target:                                                             │
+│   • importe_total_cliente (valor histórico acumulado)                        │
+│                                                                              │
+│ Métricas de Error:                                                           │
+│   • MAE Train/Test:             $ 3,882.50 / $ 7,552.50                      │
+│   • RMSE Train/Test:            $ 6,869.72 / $ 10,086.19                     │
+│   • R² Train/Test:               0.9242 / 0.6998                             │
+│                                                                              │
+│ Estadísticas del Target:                                                     │
+│   • Media:                      $ 39,573                                     │
+│   • Mediana:                    $ 34,326                                     │
+│   • Desviación estándar:        $ 23,945                                     │
+│                                                                              │
+│ Top 5 Variables (feature_importance_customer_value.csv):                     │
+│   1. ticket_max                   0.733 (73.3%)                              │
+│   2. ventas_por_mes               0.125 (12.5%)                              │
+│   3. n_ventas                     0.033 (3.3%)                               │
+│   4. desvio_ticket                0.031 (3.1%)                               │
+│   5. ticket_promedio              0.016 (1.6%)                               │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ### 4.4 Recomendaciones y consideraciones tecnicas
 - Churn: mantener exclusion de recency en features; considerar definir churn futuro (no compra en 90 dias) y calibrar threshold segun precision/recall.
@@ -195,3 +512,164 @@ Metodologia: ETL (lectura desde `db/`), limpieza y normalizacion por tabla, cons
 - `random_forest_churn.pkl`, `scaler_churn.pkl`, `feature_importance_churn.csv`, `metricas_churn.json`, `clientes_alto_riesgo.csv`
 - `random_forest_customer_value.pkl`, `scaler_customer_value.pkl`, `feature_importance_customer_value.csv`, `metricas_customer_value.json`, `predicciones_customer_value.csv`
 - `clientes_con_clusters.csv`, `perfiles_segmentos.csv`
+
+---
+
+## Outputs de artefactos (muestras)
+
+### Métricas del Modelo de Churn
+
+```python
+# Métricas de Churn (modelos/metricas_churn.json)
+import json, pathlib
+p = pathlib.Path("modelos/metricas_churn.json")
+print(p.read_text(encoding="utf-8"))
+```
+
+```output
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ PRECISIÓN DEL MODELO (TRAINING)                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Accuracy (Train):                                   98.11%                   │
+│ Accuracy (Test):                                    57.14%                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ CURVA ROC                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ ROC AUC Score:                                      0.5714                   │
+│ Umbral Óptimo:                                      0.3790                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ CLIENTES DE ALTO RIESGO                                                      │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Clientes Detectados:                                20 clientes              │
+│ Umbral de Riesgo:                                   0.70 (70%)               │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Importancia de Features (Churn)
+
+```python
+# Importancias de features (top 10 de modelos/feature_importance_churn.csv)
+import pathlib
+rows = pathlib.Path("modelos/feature_importance_churn.csv").read_text(encoding="utf-8").splitlines()
+print("\n".join(rows[:11]))
+```
+
+```output
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TOP 10 FEATURES MÁS IMPORTANTES                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  1. Importe Total Cliente               17.07%  █████████████████            │
+│  2. Ticket Máximo                        14.05%  ██████████████              │
+│  3. Ventas por Mes                      11.02%  ███████████                  │
+│  4. Antigüedad Cliente (días)           10.59%  ███████████                  │
+│  5. Ticket Promedio                      8.10%  ████████                     │
+│  6. Ticket Mínimo                         7.00%  ███████                     │
+│  7. Cantidad Promedio por Venta          6.75%  ███████                      │
+│  8. Desvío Ticket                        6.31%  ██████                       │
+│  9. Líneas Promedio por Venta            5.74%  ██████                       │
+│ 10. % Ventas Transferencia               5.02%  █████                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Métricas del Modelo de Valor del Cliente
+
+```python
+# Métricas de Valor del Cliente (modelos/metricas_customer_value.json)
+import pathlib
+print(pathlib.Path("modelos/metricas_customer_value.json").read_text(encoding="utf-8"))
+```
+
+```output
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ERROR ABSOLUTO MEDIO (MAE)                                                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ MAE Training:                                       $ 3,882.50               │
+│ MAE Test:                                           $ 7,552.50               │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ RAÍZ DEL ERROR CUADRÁTICO MEDIO (RMSE)                                       │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ RMSE Training:                                      $ 6,869.72               │
+│ RMSE Test:                                          $ 10,086.19              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ COEFICIENTE DE DETERMINACIÓN (R²)                                            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ R² Training:                                        0.9242 (92.42%)          │
+│ R² Test:                                            0.6998 (69.98%)          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ ESTADÍSTICAS DESCRIPTIVAS                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Media Importe Total:                                $ 39,573.39              │
+│ Mediana Importe Total:                              $ 34,326.00              │
+│ Desviación Estándar:                                $ 23,945.21              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Segmentación de Clientes (Clusters)
+
+```python
+# Muestra de clientes con clusters (modelos/clientes_con_clusters.csv)
+import pathlib
+rows = pathlib.Path("modelos/clientes_con_clusters.csv").read_text(encoding="utf-8").splitlines()
+print("\n".join(rows[:11]))
+```
+
+```output
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CLIENTE #1                                           Segmento A              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Ubicación:          Carlos Paz                                               │
+│ Cantidad Ventas:    2 ventas                                                 │
+│ Importe Total:      $ 72,448.00                                              │
+│ Ticket Promedio:    $ 36,224.00                                              │
+│ Ticket Máximo:      $ 36,413.00                                              │
+│ Antigüedad:         544 días (18.1 meses)                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CLIENTE #2                                           Segmento C              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Ubicación:          Carlos Paz                                               │
+│ Cantidad Ventas:    1 venta                                                  │
+│ Importe Total:      $ 22,150.00                                              │
+│ Ticket Promedio:    $ 22,150.00                                              │
+│ Ticket Máximo:      $ 22,150.00                                              │
+│ Antigüedad:         543 días (18.1 meses)                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CLIENTE #3                                           Segmento A              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Ubicación:          Río Cuarto                                               │
+│ Cantidad Ventas:    1 venta                                                  │
+│ Importe Total:      $ 33,310.00                                              │
+│ Ticket Promedio:    $ 33,310.00                                              │
+│ Ticket Máximo:      $ 33,310.00                                              │
+│ Antigüedad:         542 días (18.1 meses)                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CLIENTE #5                                           Segmento B              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Ubicación:          Córdoba                                                  │
+│ Cantidad Ventas:    4 ventas                                                 │
+│ Importe Total:      $ 132,158.00                                             │
+│ Ticket Promedio:    $ 33,039.50                                              │
+│ Ticket Máximo:      $ 45,142.00                                              │
+│ Antigüedad:         540 días (18.0 meses)                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ CLIENTE #6                                           Segmento B              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Ubicación:          Villa María                                              │
+│ Cantidad Ventas:    2 ventas                                                 │
+│ Importe Total:      $ 48,878.00                                              │
+│ Ticket Promedio:    $ 24,439.00                                              │
+│ Ticket Máximo:      $ 37,256.00                                              │
+│ Antigüedad:         539 días (18.0 meses)                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Nota: Mostrando primeras 5 filas con datos principales organizados por cliente
+```

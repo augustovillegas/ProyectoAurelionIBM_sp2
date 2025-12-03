@@ -839,15 +839,16 @@ def mostrar_menu(opciones: List[OpcionMenu], ruta: List[str]):
     for i, opcion in enumerate(opciones, 1):
         # Indicador de tipo
         tipo_indicador = "📂" if opcion.tipo == TipoOpcion.SUBMENU else "📄"
-        
+
         # Línea principal con número y nombre
-        contenido_linea = f"[{i:>2}] {opcion.icono} {opcion.etiqueta} {tipo_indicador}"
+        contenido_linea = rellenar_visual(f"[{i:>2}] {opcion.icono} {opcion.etiqueta} {tipo_indicador}", ANCHO_MARCO - 2)
         print(linea_marco(contenido_linea, ANCHO_MARCO, "│", "│"))
         
         # Descripción (si existe)
         if opcion.descripcion:
             for desc_line in envolver_texto_display(opcion.descripcion, ANCHO_MARCO - 4):
-                print(linea_marco(f" 💬 {desc_line}", ANCHO_MARCO, "│", "│"))
+                desc_fmt = rellenar_visual(f" 💬 {desc_line}", ANCHO_MARCO - 2)
+                print(linea_marco(desc_fmt, ANCHO_MARCO, "│", "│"))
         
         # Separador entre opciones
         if i < len(opciones):
@@ -895,6 +896,7 @@ def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
     last_section_header = None
     FRAME_WIDTH = ANCHO_MARCO  # ancho interno del marco para mejor legibilidad
     max_lines = 80
+    defer_counter = 0  # retrasa el "continuar" para no cortar cuadros
     shown = 0
     for linea in lineas:
         stripped = linea.strip()
@@ -941,12 +943,18 @@ def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
             print(linea)
             shown += 1
             if shown >= max_lines and not DEMO_MODE:
+                # Evitar cortar dentro de cuadros: esperar a línea en blanco, con tope
+                if stripped:
+                    defer_counter += 1
+                    if defer_counter < 30:
+                        continue
                 try:
                     input("\n--- Continuar (ENTER) ---")
                 except EOFError:
                     return
                 shown = 0
-    
+                defer_counter = 0
+
     print("\n" + ("=" * ANCHO_MARCO if ASCII_MODE else "═" * ANCHO_MARCO))
     pausar()
 

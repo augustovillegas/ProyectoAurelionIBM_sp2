@@ -119,10 +119,10 @@ Retail minorista | IBM & Guayerd | Noviembre 2025
 ## 1. Visión general del proyecto
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ 🎯 OBJETIVO DEL PROYECTO                                                    │
+│ 🎯 OBJETIVO DEL PROYECTO                                                     │
 ├──────────────────────────────────────────────────────────────────────────────┤
-│ Transformar datos de ventas minoristas en insights accionables y bases    │
-│ listas para Business Intelligence y Machine Learning.                     │
+│ Transformar datos de ventas minoristas en insights accionables y bases       │
+│ listas para Business Intelligence y Machine Learning.                        │
 └──────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -440,7 +440,7 @@ Retail minorista | IBM & Guayerd | Noviembre 2025
 └──────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ 💰 PREDICCIÓN DE VALOR DEL CLIENTE (Random Forest Regressor)                │
+│ 💰 PREDICCIÓN DE VALOR DEL CLIENTE (Random Forest Regressor)                 │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │ Variable Target:                                                             │
 │   • importe_total_cliente (valor histórico acumulado)                        │
@@ -463,55 +463,220 @@ Retail minorista | IBM & Guayerd | Noviembre 2025
 │   5. ticket_promedio              0.016 (1.6%)                               │
 └──────────────────────────────────────────────────────────────────────────────┘
 
-### 4.4 Recomendaciones y consideraciones tecnicas
-- Churn: mantener exclusion de recency en features; considerar definir churn futuro (no compra en 90 dias) y calibrar threshold segun precision/recall.
-- Valor: comunicar como "Customer Value Prediction" (no CLV formal); cruzar con segmentos para priorizar campañas.
-- Clustering: integrar segmentos en CRM/BI; monitorear drift y recalcular mensualmente.
+### 4.4 Recomendaciones y consideraciones técnicas
 
-### 4.5 Proximos pasos
-- Automatizar pipeline (ETL + reentrenamiento).
-- Dashboard con segmentos, probabilidades de churn y valor estimado.
-- A/B testing de campañas guiadas por modelos.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 💡 RECOMENDACIONES Y CONSIDERACIONES TÉCNICAS                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Modelo de Churn:                                                             │
+│   • Mantener exclusión de recency en features                                │
+│   • Considerar definir churn futuro (no compra en 90 días)                   │
+│   • Calibrar threshold según precision/recall                                │
+│                                                                              │
+│ Modelo de Valor del Cliente:                                                 │
+│   • Comunicar como "Customer Value Prediction" (no CLV formal)               │
+│   • Cruzar con segmentos para priorizar campañas                             │
+│                                                                              │
+│ Clustering:                                                                  │
+│   • Integrar segmentos en CRM/BI                                             │
+│   • Monitorear drift y recalcular mensualmente                               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+### 4.5 Próximos pasos
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🚀 PRÓXIMOS PASOS                                                            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 1. Automatización del Pipeline                                               │
+│    • ETL completo + reentrenamiento automático de modelos                    │
+│                                                                              │
+│ 2. Dashboard Interactivo                                                     │
+│    • Segmentos de clientes                                                   │
+│    • Probabilidades de churn                                                 │
+│    • Valor estimado por cliente                                              │
+│                                                                              │
+│ 3. Testing y Optimización                                                    │
+│    • A/B testing de campañas guiadas por modelos                             │
+│    • Validación de ROI de las estrategias implementadas                      │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ### 4.6 Trazabilidad y control de calidad de datos
-- Integridad referencial validada; 0 nulos y 0 duplicados en claves; tipos correctos.
 
-### 4.7 Seleccion de hiperparametros y validacion
-- KMeans: K=3 (elbow + silhouette).
-- RandomForest: 100 arboles, max_depth=10, min_samples_split=5, min_samples_leaf=2, random_state=42 para churn y valor.
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ✅ TRAZABILIDAD Y CONTROL DE CALIDAD DE DATOS                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Validaciones Aplicadas:                                                      │
+│   • Integridad referencial validada                                          │
+│   • 0 nulos en campos clave                                                  │
+│   • 0 duplicados en identificadores únicos                                   │
+│   • Tipos de datos correctos y consistentes                                  │
+│   • Rangos de valores dentro de límites esperados                            │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+### 4.7 Selección de hiperparámetros y validación
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ⚙️ SELECCIÓN DE HIPERPARÁMETROS Y VALIDACIÓN                                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ K-Means Clustering:                                                          │
+│   • K = 3 clusters                                                           │
+│   • Selección basada en método elbow + silhouette score                      │
+│   • n_init = 20, max_iter = 500                                              │
+│                                                                              │
+│ Random Forest (Churn y Valor del Cliente):                                   │
+│   • n_estimators = 100 árboles                                               │
+│   • max_depth = 10                                                           │
+│   • min_samples_split = 5                                                    │
+│   • min_samples_leaf = 2                                                     │
+│   • random_state = 42 (reproducibilidad)                                     │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ### 4.8 Limitaciones y advertencias
-- Silhouette moderado (0.1985) sugiere segmentos utilis pero con solapamiento.
-- ROC-AUC de churn modesto (0.57) requiere iteraciones adicionales y mejor target.
 
-### 4.9 Etica, privacidad y buenas practicas
-- Datasets ML sin PII sensible; documentar supresion de emails/nombres para despliegue.
-- Evitar data leakage (recency no usada como feature).
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ⚠️ LIMITACIONES Y ADVERTENCIAS                                               │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Clustering (K-Means):                                                        │
+│   • Silhouette moderado (0.1985) indica segmentos útiles pero con            │
+│     solapamiento entre clusters                                              │
+│   • Recomendado validar con expertos de negocio                              │
+│                                                                              │
+│ Modelo de Churn:                                                             │
+│   • ROC-AUC modesto (0.57) requiere iteraciones adicionales                  │
+│   • Considerar redefinir variable target (churn futuro vs histórico)         │
+│   • Dataset pequeño (67 clientes) limita capacidad predictiva                │
+│                                                                              │
+│ Consideraciones Generales:                                                   │
+│   • Tamaño muestral limitado afecta generalización                           │
+│   • Validar resultados con datos nuevos antes de producción                  │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-### 4.10 Mantenimiento y actualizacion de modelos
-- Reentrenar trimestral o ante drift significativo; versionar artefactos en `modelos/`.
+### 4.9 Ética, privacidad y buenas prácticas
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔒 ÉTICA, PRIVACIDAD Y BUENAS PRÁCTICAS                                      │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Protección de Datos Personales:                                             │
+│   • Datasets ML sin PII sensible (emails, nombres eliminados)                │
+│   • Documentar proceso de supresión para cumplimiento normativo              │
+│   • Uso de IDs anonimizados en modelos productivos                           │
+│                                                                              │
+│ Prevención de Sesgos y Data Leakage:                                         │
+│   • Variable recency excluida de features para evitar data leakage           │
+│   • Validación de equidad en predicciones entre segmentos                    │
+│   • Train/test split temporal cuando sea aplicable                           │
+│                                                                              │
+│ Transparencia y Explicabilidad:                                              │
+│   • Feature importance documentada para todos los modelos                    │
+│   • Umbral de decisión ajustable según contexto de negocio                   │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+### 4.10 Mantenimiento y actualización de modelos
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔄 MANTENIMIENTO Y ACTUALIZACIÓN DE MODELOS                                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Frecuencia de Reentrenamiento:                                               │
+│   • Trimestral (baseline)                                                    │
+│   • Inmediato ante detección de drift significativo                          │
+│   • Evaluación continua de métricas de desempeño                             │
+│                                                                              │
+│ Control de Versiones:                                                        │
+│   • Versionado de artefactos en carpeta `modelos/`                           │
+│   • Nomenclatura: modelo_nombre_vYYYYMMDD.pkl                                │
+│   • Registro de cambios y métricas por versión                               │
+│                                                                              │
+│ Monitoreo de Desempeño:                                                      │
+│   • Tracking de métricas clave en producción                                 │
+│   • Alertas automáticas si métricas caen por debajo de umbral                │
+│   • Validación A/B de nuevas versiones antes de despliegue                   │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ---
 
-## 5. Referencias y Bibliografia
-- Guayerd e IBM materiales educativos del curso de Data Science aplicado a retail.
+## 5. Referencias y Bibliografía
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📚 REFERENCIAS Y BIBLIOGRAFÍA                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Fuentes Principales:                                                         │
+│   • Guayerd - Materiales educativos del curso de Data Science                │
+│   • IBM - Recursos de formación en análisis de datos retail                  │
+│   • Dataset educativo proporcionado para fines académicos                    │
+│                                                                              │
+│ Frameworks y Librerías:                                                      │
+│   • Python 3.10+                                                             │
+│   • pandas, numpy - Manipulación de datos                                    │
+│   • scikit-learn - Machine Learning                                          │
+│   • matplotlib, seaborn - Visualización                                      │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ---
 
-## 6. Glosario de Terminos
-- CV: Coeficiente de variacion.
-- ROC-AUC: Area bajo la curva ROC.
-- SMOTE: Synthetic Minority Over-sampling Technique.
-- R2: Coeficiente de determinacion.
-- Silhouette: medida de separacion de clusters.
+## 6. Glosario de Términos
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📖 GLOSARIO DE TÉRMINOS TÉCNICOS                                             │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ CV (Coeficiente de Variación):                                               │
+│   Medida de dispersión relativa que expresa la desviación estándar como      │
+│   porcentaje de la media.                                                    │
+│                                                                              │
+│ ROC-AUC (Area Under the ROC Curve):                                          │
+│   Métrica de evaluación para modelos de clasificación que mide la            │
+│   capacidad del modelo para distinguir entre clases.                         │
+│                                                                              │
+│ SMOTE (Synthetic Minority Over-sampling Technique):                          │
+│   Técnica de sobremuestreo para balancear clases desbalanceadas              │
+│   generando ejemplos sintéticos.                                             │
+│                                                                              │
+│ R² (Coeficiente de Determinación):                                           │
+│   Métrica que indica qué proporción de la varianza de la variable            │
+│   dependiente es explicada por el modelo.                                    │
+│                                                                              │
+│ Silhouette Score:                                                            │
+│   Medida de calidad de clustering que evalúa la separación entre             │
+│   clusters. Rango: [-1, 1], donde 1 es óptimo.                               │
+│                                                                              │
+│ Churn:                                                                       │
+│   Tasa de abandono o pérdida de clientes en un período determinado.          │
+│                                                                              │
+│ Feature Importance:                                                          │
+│   Importancia relativa de cada variable en las predicciones del modelo.      │
+│                                                                              │
+│ Data Leakage:                                                                │
+│   Filtración de información del conjunto de test al entrenamiento,           │
+│   causando sobreestimación del rendimiento.                                  │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ---
 
-## Mapa de artefactos (carpeta `modelos/`)
-- `kmeans_segmentacion.pkl`, `scaler_clustering.pkl`, `pca_clustering.pkl`
-- `random_forest_churn.pkl`, `scaler_churn.pkl`, `feature_importance_churn.csv`, `metricas_churn.json`, `clientes_alto_riesgo.csv`
-- `random_forest_customer_value.pkl`, `scaler_customer_value.pkl`, `feature_importance_customer_value.csv`, `metricas_customer_value.json`, `predicciones_customer_value.csv`
-- `clientes_con_clusters.csv`, `perfiles_segmentos.csv`
+## Mapa de artefactos
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🗂️ MAPA DE ARTEFACTOS (Carpeta `modelos/`)                                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Clustering (K-Means):                                                        │
+│   • kmeans_segmentacion.pkl       - Modelo K-Means entrenado                 │
+│   • scaler_clustering.pkl         - Escalador StandardScaler                 │
+│   • pca_clustering.pkl            - PCA para reducción dimensional           │
+│   • clientes_con_clusters.csv     - Asignación de clusters por cliente       │
+│   • perfiles_segmentos.csv        - Perfiles promedio por cluster            │
+│                                                                              │
+│ Modelo de Churn:                                                             │
+│   • random_forest_churn.pkl       - Clasificador Random Forest               │
+│   • scaler_churn.pkl              - Escalador de features                    │
+│   • feature_importance_churn.csv  - Ranking de importancia de variables      │
+│   • metricas_churn.json           - Métricas de evaluación del modelo        │
+│   • clientes_alto_riesgo.csv      - Clientes con alta probabilidad churn    │
+│                                                                              │
+│ Modelo de Valor del Cliente:                                                 │
+│   • random_forest_customer_value.pkl       - Regresor Random Forest          │
+│   • scaler_customer_value.pkl              - Escalador de features           │
+│   • feature_importance_customer_value.csv  - Ranking de variables            │
+│   • metricas_customer_value.json           - Métricas del modelo             │
+│   • predicciones_customer_value.csv        - Valores predichos               │
+└──────────────────────────────────────────────────────────────────────────────┘
 
 ---
 

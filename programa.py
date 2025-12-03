@@ -31,10 +31,17 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 
+# Configurar codificación UTF-8 para Windows
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RUTA_DOC = os.path.join(BASE_DIR, "DOCUMENTACION.md")
 DEMO_MODE = False
 ASCII_MODE = False
+ANCHO_MARCO = 78
 
 
 class TipoOpcion(Enum):
@@ -69,9 +76,9 @@ def pausar():
 def cargar_documentacion(ruta: str) -> str:
     """Lee el archivo de documentación completo y lo devuelve como texto."""
     if not os.path.exists(ruta):
-        print("\n" + "╔" + "═" * 78 + "╗")
-        print("║" + " ERROR - ARCHIVO NO ENCONTRADO ".center(78) + "║")
-        print("╚" + "═" * 78 + "╝")
+        print("\n" + "╔" + "═" * ANCHO_MARCO + "╗")
+        print(linea_marco(" ERROR - ARCHIVO NO ENCONTRADO ", ANCHO_MARCO, "║", "║"))
+        print("╚" + "═" * ANCHO_MARCO + "╝")
         print(f"\n📁 Ruta esperada: {os.path.abspath(ruta)}")
         print("⚠️  Asegurate de que DOCUMENTACION.md esté en la misma carpeta que programa.py\n")
         return ""
@@ -161,6 +168,111 @@ def normalizar_clave(titulo: str) -> str:
     return titulo.upper()
 
 
+def _es_emoji(ch: str) -> bool:
+    """Heurística simple para detectar emojis (ancho 2 en consola)."""
+    cp = ord(ch)
+    return 0x1F300 <= cp <= 0x1FAFF or 0x1F600 <= cp <= 0x1F64F
+
+
+def ancho_visual(texto: str) -> int:
+    """Calcula el ancho en consola considerando caracteres de doble ancho."""
+    ancho = 0
+    for ch in texto:
+        if unicodedata.combining(ch):
+            continue
+        if unicodedata.east_asian_width(ch) in ("F", "W") or _es_emoji(ch):
+            ancho += 2
+        else:
+            ancho += 1
+    return ancho
+
+
+def recortar_visual(texto: str, ancho: int) -> str:
+    """Recorta texto para que no exceda el ancho visual especificado."""
+    resultado = []
+    acumulado = 0
+    for ch in texto:
+        w = ancho_visual(ch)
+        if acumulado + w > ancho:
+            break
+        resultado.append(ch)
+        acumulado += w
+    return "".join(resultado)
+
+
+def rellenar_visual(texto: str, ancho: int, alineacion: str = "left") -> str:
+    """Rellena con espacios respetando ancho visual y truncando con elipsis."""
+    if ancho <= 0:
+        return ""
+    if ancho_visual(texto) > ancho:
+        texto = recortar_visual(texto, max(ancho - 1, 0)) + ("…" if ancho > 1 else "")
+    faltante = max(ancho - ancho_visual(texto), 0)
+    if alineacion == "right":
+        return " " * faltante + texto
+    if alineacion == "center":
+        izq = faltante // 2
+        der = faltante - izq
+        return " " * izq + texto + " " * der
+    return texto + " " * faltante
+
+
+def centrar_visual(texto: str, ancho: int) -> str:
+    """Centra texto según su ancho visual."""
+    return rellenar_visual(texto, ancho, alineacion="center")
+
+
+def envolver_texto_display(texto: str, ancho: int) -> List[str]:
+    """Envuelve texto respetando el ancho visual."""
+    lineas: List[str] = []
+    actual = ""
+    ancho_actual = 0
+    for palabra in texto.split():
+        palabra_ancho = ancho_visual(palabra)
+        sep = 1 if actual else 0
+        if ancho_actual + sep + palabra_ancho > ancho:
+            if actual:
+                lineas.append(actual)
+            actual = palabra
+            ancho_actual = palabra_ancho
+        else:
+            if actual:
+                actual += " "
+                ancho_actual += 1
+            actual += palabra
+            ancho_actual += palabra_ancho
+    if actual:
+        lineas.append(actual)
+    if not lineas:
+        lineas.append("")
+    return lineas
+
+
+def dividir_por_ancho(texto: str, ancho: int) -> List[str]:
+    """Divide texto en segmentos consecutivos respetando el ancho visual."""
+    if ancho <= 0:
+        return [""]
+    lineas: List[str] = []
+    actual = ""
+    ancho_actual = 0
+    for ch in texto:
+        w = ancho_visual(ch)
+        if ancho_actual + w > ancho:
+            lineas.append(actual)
+            actual = ch
+            ancho_actual = w
+        else:
+            actual += ch
+            ancho_actual += w
+    if actual or not lineas:
+        lineas.append(actual)
+    return lineas
+
+
+def linea_marco(contenido: str, ancho: int = ANCHO_MARCO, borde_izq: str = "│", borde_der: str = "│") -> str:
+    """Retorna una línea enmarcada con los bordes indicados."""
+    return f"{borde_izq}{rellenar_visual(contenido, ancho)}{borde_der}"
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONSTRUCCIÓN DE ESTRUCTURA DE MENÚS
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -225,6 +337,14 @@ def construir_estructura_menus(secciones: Dict[str, str]) -> OpcionMenu:
             descripcion="Cambios clave y resultados principales en formato resumido"
         ))
 
+    # Cómo ejecutar el visor
+    k_ejecutar = _find_first_key_by_tokens(secciones, ["como", "ejecutar"])
+    if k_ejecutar:
+        menu_raiz.hijos.append(OpcionMenu(
+            clave=k_ejecutar, etiqueta="Cómo Ejecutar el Visor", icono="🚀", tipo=TipoOpcion.CONTENIDO,
+            descripcion="Instrucciones de instalación y ejecución del programa"
+        ))
+
     # Visión general (buscar por tokens)
     k_vision = _find_first_key_by_tokens(secciones, ["vision", "general"])
     if k_vision:
@@ -243,24 +363,40 @@ def construir_estructura_menus(secciones: Dict[str, str]) -> OpcionMenu:
     if sprint2:
         menu_raiz.hijos.append(sprint2)
 
-
     # Construir Sprint 3 (Machine Learning y Modelado Predictivo)
     sprint3 = construir_submenu_sprint3(secciones)
     if sprint3:
         menu_raiz.hijos.append(sprint3)
 
     # Referencias y Glosario
-    k_refs = next((k for k in secciones if k.startswith("5_")), None) or _find_first_key_by_tokens(secciones, ["referencia"])
+    k_refs = _find_first_key_by_tokens(secciones, ["referencia", "bibliografia"])
     if k_refs:
         menu_raiz.hijos.append(OpcionMenu(
-            clave=k_refs, etiqueta="Referencias y Bibliograf?a", icono="??", tipo=TipoOpcion.CONTENIDO,
-            descripcion="Fuentes, bibliograf?a y recursos utilizados"
+            clave=k_refs, etiqueta="Referencias y Bibliografía", icono="📚", tipo=TipoOpcion.CONTENIDO,
+            descripcion="Fuentes, bibliografía y recursos utilizados"
         ))
-    k_glos = next((k for k in secciones if k.startswith("6_")), None) or _find_first_key_by_tokens(secciones, ["glosario"])
+    
+    k_glos = _find_first_key_by_tokens(secciones, ["glosario"])
     if k_glos:
         menu_raiz.hijos.append(OpcionMenu(
-            clave=k_glos, etiqueta="Glosario de T?rminos", icono="?", tipo=TipoOpcion.CONTENIDO,
-            descripcion="Definiciones de t?rminos t?cnicos y de negocio"
+            clave=k_glos, etiqueta="Glosario de Términos", icono="📖", tipo=TipoOpcion.CONTENIDO,
+            descripcion="Definiciones de términos técnicos y de negocio"
+        ))
+    
+    # Mapa de artefactos
+    k_mapa = _find_first_key_by_tokens(secciones, ["mapa", "artefactos"])
+    if k_mapa:
+        menu_raiz.hijos.append(OpcionMenu(
+            clave=k_mapa, etiqueta="Mapa de Artefactos", icono="🗂️", tipo=TipoOpcion.CONTENIDO,
+            descripcion="Inventario completo de archivos y modelos generados"
+        ))
+    
+    # Outputs de artefactos
+    k_outputs = _find_first_key_by_tokens(secciones, ["outputs", "artefactos"])
+    if k_outputs:
+        menu_raiz.hijos.append(OpcionMenu(
+            clave=k_outputs, etiqueta="Outputs de Artefactos (Muestras)", icono="📊", tipo=TipoOpcion.CONTENIDO,
+            descripcion="Ejemplos de salidas y resultados de los modelos"
         ))
 
     if ASCII_MODE:
@@ -663,16 +799,16 @@ def construir_submenu_etapa(secciones: Dict[str, str], clave_sprint: str,
 def mostrar_header():
     """Muestra el encabezado principal del programa."""
     if ASCII_MODE:
-        print("\n" + "=" * 78)
-        print(" PROYECTO AURELION - VISOR DE DOCUMENTACION TECNICA ".center(78, "="))
-        print(" IBM & Guayerd · Analisis de Datos Retail · 2025 ".center(78))
-        print("=" * 78)
+        print("\n" + "=" * ANCHO_MARCO)
+        print(" PROYECTO AURELION - VISOR DE DOCUMENTACION TECNICA ".center(ANCHO_MARCO, "="))
+        print(" IBM & Guayerd · Analisis de Datos Retail · 2025 ".center(ANCHO_MARCO))
+        print("=" * ANCHO_MARCO)
         return
-    print("\n" + "╔" + "═" * 78 + "╗")
-    print("║" + " 🏪  PROYECTO AURELION - VISOR DE DOCUMENTACIÓN TÉCNICA  🏪 ".center(78) + "║")
-    print("╠" + "═" * 78 + "╣")
-    print("║" + " IBM & Guayerd · Análisis de Datos Retail · 2025 ".center(78) + "║")
-    print("╚" + "═" * 78 + "╝")
+    print("\n" + "╔" + "═" * ANCHO_MARCO + "╗")
+    print(linea_marco(centrar_visual(" 🏪  PROYECTO AURELION - VISOR DE DOCUMENTACIÓN TÉCNICA  🏪 ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
+    print("╠" + "═" * ANCHO_MARCO + "╣")
+    print(linea_marco(centrar_visual(" IBM & Guayerd · Análisis de Datos Retail · 2025 ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
+    print("╚" + "═" * ANCHO_MARCO + "╝")
 
 
 def mostrar_breadcrumbs(ruta: List[str]):
@@ -681,7 +817,7 @@ def mostrar_breadcrumbs(ruta: List[str]):
         return
     
     print("\n📍 Ubicación: " + " → ".join(ruta))
-    print("─" * 78)
+    print("─" * ANCHO_MARCO)
 
 
 def mostrar_menu(opciones: List[OpcionMenu], ruta: List[str]):
@@ -696,38 +832,38 @@ def mostrar_menu(opciones: List[OpcionMenu], ruta: List[str]):
     mostrar_header()
     mostrar_breadcrumbs(ruta)
     
-    print("\n" + "┌" + "─" * 78 + "┐")
-    print("│" + " MENÚ DE OPCIONES ".center(78) + "│")
-    print("├" + "─" * 78 + "┤")
+    print("\n" + "┌" + "─" * ANCHO_MARCO + "┐")
+    print(linea_marco(centrar_visual(" MENÚ DE OPCIONES ", ANCHO_MARCO), ANCHO_MARCO, "│", "│"))
+    print("├" + "─" * ANCHO_MARCO + "┤")
     
     for i, opcion in enumerate(opciones, 1):
         # Indicador de tipo
         tipo_indicador = "📂" if opcion.tipo == TipoOpcion.SUBMENU else "📄"
         
         # Línea principal con número y nombre
-        print(f"│ [{i:>2}] {opcion.icono} {opcion.etiqueta:<62} {tipo_indicador} │")
+        contenido_linea = f"[{i:>2}] {opcion.icono} {opcion.etiqueta} {tipo_indicador}"
+        print(linea_marco(contenido_linea, ANCHO_MARCO, "│", "│"))
         
         # Descripción (si existe)
         if opcion.descripcion:
-            desc_lines = [opcion.descripcion[i:i+70] for i in range(0, len(opcion.descripcion), 70)]
-            for desc_line in desc_lines:
-                print(f"│      💬 {desc_line:<69} │")
+            for desc_line in envolver_texto_display(opcion.descripcion, ANCHO_MARCO - 4):
+                print(linea_marco(f" 💬 {desc_line}", ANCHO_MARCO, "│", "│"))
         
         # Separador entre opciones
         if i < len(opciones):
-            print("├" + "┄" * 78 + "┤")
-    
-    print("└" + "─" * 78 + "┘")
+            print("├" + "┄" * ANCHO_MARCO + "┤")
+
+    print("└" + "─" * ANCHO_MARCO + "┘")
     
     # Opciones de navegación
-    print("\n" + "═" * 78)
+    print("\n" + "═" * ANCHO_MARCO)
     if len(ruta) > 1:
-        print("  [0] ⬅️  Volver al menú anterior", end="")
+        print(rellenar_visual(" [0] ⬅️  Volver al menú anterior", ANCHO_MARCO))
     else:
-        print("  [Q] 🚪 Salir del programa", end="")
-    
-    print("  │  [R] 🔄 Recargar documentación")
-    print("═" * 78)
+        print(rellenar_visual(" [Q] 🚪 Salir del programa", ANCHO_MARCO))
+
+    print(rellenar_visual(" [R] 🔄 Recargar documentación", ANCHO_MARCO))
+    print("═" * ANCHO_MARCO)
 
 
 def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
@@ -744,20 +880,20 @@ def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
     mostrar_breadcrumbs(ruta)
     
     if ASCII_MODE:
-        print("\n" + "=" * 78)
-        print(f" {titulo} ".center(78, "="))
-        print("=" * 78 + "\n")
+        print("\n" + "=" * ANCHO_MARCO)
+        print(f" {titulo} ".center(ANCHO_MARCO, "="))
+        print("=" * ANCHO_MARCO + "\n")
     else:
-        print("\n" + "╔" + "═" * 78 + "╗")
-        print("║" + f" {titulo} ".center(78) + "║")
-        print("╚" + "═" * 78 + "╝\n")
+        print("\n" + "╔" + "═" * ANCHO_MARCO + "╗")
+        print(linea_marco(centrar_visual(f" {titulo} ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
+        print("╚" + "═" * ANCHO_MARCO + "╝\n")
     
     # Mostrar contenido con scroll y bloques de output destacados (mejorado)
     lineas = contenido.split('\n')
     in_output_block = False
     output_buffer = []
     last_section_header = None
-    FRAME_WIDTH = 78  # ancho interno del marco para mejor legibilidad
+    FRAME_WIDTH = ANCHO_MARCO  # ancho interno del marco para mejor legibilidad
     max_lines = 80
     shown = 0
     for linea in lineas:
@@ -784,16 +920,16 @@ def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
                 print(f" {titulo_bloque} ".center(FRAME_WIDTH, '-'))
             else:
                 print('\n' + '╔' + '═' * FRAME_WIDTH + '╗')
-                print('║' + f" {titulo_bloque} ".center(FRAME_WIDTH) + '║')
+                print(linea_marco(centrar_visual(f" {titulo_bloque} ", FRAME_WIDTH), FRAME_WIDTH, "║", "║"))
                 print('╠' + '═' * FRAME_WIDTH + '╣')
             for out_line in output_buffer:
                 # Ajustar ancho y márgenes, envolver líneas largas
-                sublines = [out_line[i:i+FRAME_WIDTH] for i in range(0, len(out_line), FRAME_WIDTH)] or ['']
+                sublines = dividir_por_ancho(out_line, FRAME_WIDTH - 2) or ['']
                 for subline in sublines:
                     if ASCII_MODE:
                         print(subline)
                     else:
-                        print('║ ' + subline.ljust(FRAME_WIDTH - 2) + ' ║')
+                        print('║ ' + rellenar_visual(subline, FRAME_WIDTH - 2) + ' ║')
             if not ASCII_MODE:
                 print('╚' + '═' * FRAME_WIDTH + '╝\n')
             in_output_block = False
@@ -811,7 +947,7 @@ def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
                     return
                 shown = 0
     
-    print("\n" + ("=" * 78 if ASCII_MODE else "═" * 78))
+    print("\n" + ("=" * ANCHO_MARCO if ASCII_MODE else "═" * ANCHO_MARCO))
     pausar()
 
 
@@ -917,10 +1053,10 @@ class NavegadorMenus:
             # Opción: Salir
             if opcion == 'Q' and len(self.ruta) == 1:
                 limpiar_pantalla()
-                print("\n" + "╔" + "═" * 78 + "╗")
-                print("║" + " Gracias por usar el Visor de Documentación de Aurelion ".center(78) + "║")
-                print("║" + " ¡Hasta pronto! 👋 ".center(78) + "║")
-                print("╚" + "═" * 78 + "╝\n")
+                print("\n" + "╔" + "═" * ANCHO_MARCO + "╗")
+                print(linea_marco(centrar_visual(" Gracias por usar el Visor de Documentación de Aurelion ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
+                print(linea_marco(centrar_visual(" ¡Hasta pronto! 👋 ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
+                print("╚" + "═" * ANCHO_MARCO + "╝\n")
                 break
             
             # Opción: Volver
@@ -977,8 +1113,14 @@ def main():
     # Iniciar navegador o demo
     if DEMO_MODE:
         print("✅ Sistema listo. Modo demo activado.\n")
+        pausar()
         clave_tldr = _find_first_key_by_tokens(secciones, ["TLDR"]) or "DOC_COMPLETA"
-        mostrar_contenido("DEMO - Resumen ejecutivo", secciones.get(clave_tldr, "Contenido no disponible"), ["Inicio", "Demo"])
+        contenido_demo = secciones.get(clave_tldr, "Contenido no disponible")
+        mostrar_contenido("DEMO - Resumen Ejecutivo (TL;DR)", contenido_demo, ["Inicio", "Demo"])
+        print("\n" + "═" * ANCHO_MARCO)
+        print("  ✅ Modo demo completado. El visor está funcionando correctamente.")
+        print("  💡 Ejecutá 'python programa.py' sin --demo para usar el modo interactivo.")
+        print("═" * ANCHO_MARCO + "\n")
         return
 
     print("✅ Sistema listo. Iniciando navegador...\n")

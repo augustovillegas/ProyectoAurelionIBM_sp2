@@ -821,8 +821,9 @@ def mostrar_breadcrumbs(ruta: List[str]):
     if len(ruta) <= 1:
         return
     
-    print("\n📍 Ubicación: " + " → ".join(ruta))
-    print("─" * ANCHO_MARCO)
+    print("\n" + "┌" + "─" * ANCHO_MARCO + "┐")
+    print(linea_marco("📍 Ubicación: " + " → ".join(ruta), ANCHO_MARCO, "│", "│"))
+    print("└" + "─" * ANCHO_MARCO + "┘")
 
 
 def mostrar_menu(opciones: List[OpcionMenu], ruta: List[str]):
@@ -845,14 +846,15 @@ def mostrar_menu(opciones: List[OpcionMenu], ruta: List[str]):
         # Indicador de tipo
         tipo_indicador = "📂" if opcion.tipo == TipoOpcion.SUBMENU else "📄"
 
-        # Línea principal con número y nombre
-        contenido_linea = rellenar_visual(f"[{i:>2}] {opcion.icono} {opcion.etiqueta} {tipo_indicador}", ANCHO_MARCO - 2)
+        # Línea principal con número alineado y nombre
+        num_opcion = f"[{i:>2}]"
+        contenido_linea = rellenar_visual(f"{num_opcion} {opcion.icono}  {opcion.etiqueta} {tipo_indicador}", ANCHO_MARCO - 2)
         print(linea_marco(contenido_linea, ANCHO_MARCO, "│", "│"))
         
         # Descripción (si existe)
         if opcion.descripcion:
-            for desc_line in envolver_texto_display(opcion.descripcion, ANCHO_MARCO - 4):
-                desc_fmt = rellenar_visual(f" 💬 {desc_line}", ANCHO_MARCO - 2)
+            for desc_line in envolver_texto_display(opcion.descripcion, ANCHO_MARCO - 6):
+                desc_fmt = rellenar_visual(f"     💬 {desc_line}", ANCHO_MARCO - 2)
                 print(linea_marco(desc_fmt, ANCHO_MARCO, "│", "│"))
         
         # Separador entre opciones
@@ -862,14 +864,16 @@ def mostrar_menu(opciones: List[OpcionMenu], ruta: List[str]):
     print("└" + "─" * ANCHO_MARCO + "┘")
     
     # Opciones de navegación
-    print("\n" + "═" * ANCHO_MARCO)
+    print("\n" + "╔" + "═" * ANCHO_MARCO + "╗")
+    print(linea_marco(" NAVEGACIÓN ", ANCHO_MARCO, "║", "║"))
+    print("╠" + "═" * ANCHO_MARCO + "╣")
     if len(ruta) > 1:
-        print(rellenar_visual(" [0] ⬅️  Volver al menú anterior", ANCHO_MARCO))
+        print(linea_marco(" [0] ⬅️   Volver al menú anterior", ANCHO_MARCO, "║", "║"))
     else:
-        print(rellenar_visual(" [Q] 🚪 Salir del programa", ANCHO_MARCO))
+        print(linea_marco(" [Q] 🚪  Salir del programa", ANCHO_MARCO, "║", "║"))
 
-    print(rellenar_visual(" [R] 🔄 Recargar documentación", ANCHO_MARCO))
-    print("═" * ANCHO_MARCO)
+    print(linea_marco(" [R] 🔄  Recargar documentación", ANCHO_MARCO, "║", "║"))
+    print("╚" + "═" * ANCHO_MARCO + "╝")
 
 
 def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
@@ -1027,8 +1031,19 @@ def mostrar_mensaje(mensaje: str, tipo: str = "info"):
         "error": "❌"
     }
     
+    bordes = {
+        "info": "─",
+        "success": "═",
+        "warning": "━",
+        "error": "═"
+    }
+    
     icono = iconos.get(tipo, "ℹ️")
-    print(f"\n{icono}  {mensaje}")
+    borde = bordes.get(tipo, "─")
+    
+    print("\n" + borde * ANCHO_MARCO)
+    print(f"{icono}  {mensaje}")
+    print(borde * ANCHO_MARCO)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1115,8 +1130,12 @@ class NavegadorMenus:
             if opcion == 'Q' and len(self.ruta) == 1:
                 limpiar_pantalla()
                 print("\n" + "╔" + "═" * ANCHO_MARCO + "╗")
-                print(linea_marco(centrar_visual(" Gracias por usar el Visor de Documentación de Aurelion ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
+                print(linea_marco(centrar_visual(" ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
+                print(linea_marco(centrar_visual(" 🏪  PROYECTO AURELION  🏪 ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
+                print(linea_marco(centrar_visual(" ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
+                print(linea_marco(centrar_visual(" Gracias por usar el Visor de Documentación ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
                 print(linea_marco(centrar_visual(" ¡Hasta pronto! 👋 ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
+                print(linea_marco(centrar_visual(" ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
                 print("╚" + "═" * ANCHO_MARCO + "╝\n")
                 break
             

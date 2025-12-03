@@ -40,7 +40,7 @@ if sys.platform == 'win32':
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RUTA_DOC = os.path.join(BASE_DIR, "DOCUMENTACION.md")
 DEMO_MODE = False
-ASCII_MODE = False
+ASCII_MODE = True 
 ANCHO_MARCO = 78
 
 
@@ -64,8 +64,9 @@ class OpcionMenu:
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FUNCIONES DE UTILIDAD Y CARGA DE DATOS
+# ═══════════════════════════════════════════════════════════════════════════════
+
 def pausar():
-    """Pausa y espera que el usuario presione ENTER."""
     if DEMO_MODE:
         return
     try:
@@ -74,7 +75,6 @@ def pausar():
         return
 
 def cargar_documentacion(ruta: str) -> str:
-    """Lee el archivo de documentación completo y lo devuelve como texto."""
     if not os.path.exists(ruta):
         print("\n" + "╔" + "═" * ANCHO_MARCO + "╗")
         print(linea_marco(" ERROR - ARCHIVO NO ENCONTRADO ", ANCHO_MARCO, "║", "║"))
@@ -88,55 +88,61 @@ def cargar_documentacion(ruta: str) -> str:
     except Exception as e:
         print(f"\n❌ Error al leer el archivo: {e}\n")
         return ""
-# ═══════════════════════════════════════════════════════════════════════════════
 
 def limpiar_pantalla():
-    """Limpia la pantalla de la consola."""
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
+def ancho_visual(texto: str) -> int:
+    ancho = 0
+    for char in texto:
+        code_point = ord(char)
+        if (0x1F300 <= code_point <= 0x1F9FF or
+            0x2600 <= code_point <= 0x27BF or
+            0x2B50 <= code_point <= 0x2B55):
+            ancho += 2
+        else:
+            ancho += 1
+    return ancho
+
+
+def linea_marco(texto: str, ancho: int, borde_izq: str = "║", borde_der: str = "║") -> str:
+    ancho_texto = ancho_visual(texto)
+    espacios_totales = ancho - ancho_texto
+    espacios_izq = espacios_totales // 2
+    espacios_der = espacios_totales - espacios_izq
+    return f"{borde_izq}{' ' * espacios_izq}{texto}{' ' * espacios_der}{borde_der}"
+
+
 def parsear_secciones(md: str) -> Dict[str, str]:
-    """
-    Divide la documentación en secciones usando encabezados Markdown.
-    
-    Retorna un diccionario con:
-    - Claves: títulos de secciones normalizados
-    - Valores: contenido completo de cada sección
-    """
     secciones: Dict[str, str] = {}
     md = md.strip()
 
     if not md:
         return secciones
 
-    # Documento completo
     secciones["DOC_COMPLETA"] = md
 
-    # Encontrar todos los encabezados de nivel 2, 3 y 4
     patron_h2 = re.compile(r"^##\s+(.+?)$", re.MULTILINE)
     patron_h3 = re.compile(r"^###\s+(.+?)$", re.MULTILINE)
     patron_h4 = re.compile(r"^####\s+(.+?)$", re.MULTILINE)
     
     matches_h2 = list(patron_h2.finditer(md))
 
-    # Contenido antes del primer H2 (Introducción)
     if matches_h2:
         intro = md[:matches_h2[0].start()].strip()
         if intro:
             secciones["INTRO"] = intro
 
-    # Procesar cada sección H2
     for i, match in enumerate(matches_h2):
         titulo = match.group(1).strip()
         inicio = match.start()
         fin = matches_h2[i + 1].start() if i + 1 < len(matches_h2) else len(md)
         contenido_completo = md[inicio:fin].strip()
         
-        # Normalizar clave
         clave = normalizar_clave(titulo)
         secciones[clave] = contenido_completo
         
-        # Buscar subsecciones H3 dentro de esta H2
         subseccion_matches = list(patron_h3.finditer(contenido_completo))
         for j, sub_match in enumerate(subseccion_matches):
             sub_titulo = sub_match.group(1).strip()
@@ -147,7 +153,6 @@ def parsear_secciones(md: str) -> Dict[str, str]:
             sub_clave = f"{clave}_{normalizar_clave(sub_titulo)}"
             secciones[sub_clave] = sub_contenido
             
-            # Buscar subsecciones H4 dentro de cada H3
             h4_matches = list(patron_h4.finditer(sub_contenido))
             for k, h4_match in enumerate(h4_matches):
                 h4_titulo = h4_match.group(1).strip()
@@ -162,14 +167,12 @@ def parsear_secciones(md: str) -> Dict[str, str]:
 
 
 def normalizar_clave(titulo: str) -> str:
-    """Normaliza un título para usarlo como clave de diccionario."""
     titulo = re.sub(r'[^\w\s\-]', '', titulo)
     titulo = re.sub(r'\s+', '_', titulo.strip())
     return titulo.upper()
 
 
 def _es_emoji(ch: str) -> bool:
-    """Heurística simple para detectar emojis (ancho 2 en consola)."""
     cp = ord(ch)
     return 0x1F300 <= cp <= 0x1FAFF or 0x1F600 <= cp <= 0x1F64F
 
@@ -681,14 +684,12 @@ def construir_submenu_sprint2(secciones: Dict[str, str]) -> Optional[OpcionMenu]
 def construir_submenu_etapa(secciones: Dict[str, str], clave_sprint: str, 
                             num_etapa: str, nombre_etapa: str, icono: str, 
                             descripcion: str) -> Optional[OpcionMenu]:
-    """Construye submenús para las etapas del Sprint 2 detectando dinámicamente subsecciones H4."""
     
-    # Mapeo de números de sección a etapas (3.4 -> Etapa 1, 3.5 -> Etapa 2, etc.)
     etapa_seccion_map = {
-        "1": "34",  # 3.4
-        "2": "35",  # 3.5
-        "3": "36",  # 3.6
-        "4": "37"   # 3.7
+        "1": "34",
+        "2": "35",
+        "3": "36",
+        "4": "37"
     }
     
     if num_etapa not in etapa_seccion_map:
@@ -696,8 +697,6 @@ def construir_submenu_etapa(secciones: Dict[str, str], clave_sprint: str,
     
     num_seccion = etapa_seccion_map[num_etapa]
     
-    # Buscar dinámicamente la clave de la etapa principal (H3)
-    # Patrón: 3_SPRINT_2_..._34_ETAPA_1_... con exactamente 13 guiones bajos
     clave_etapa = None
     for k in secciones:
         if (f"_{num_seccion}_ETAPA_{num_etapa}_" in k and 
@@ -894,46 +893,36 @@ def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
     in_output_block = False
     output_buffer = []
     last_section_header = None
-    FRAME_WIDTH = ANCHO_MARCO  # ancho interno del marco para mejor legibilidad
     max_lines = 80
-    defer_counter = 0  # retrasa el "continuar" para no cortar cuadros
+    defer_counter = 0
     shown = 0
     for linea in lineas:
         stripped = linea.strip()
-        # Capturar el último encabezado markdown para título contextual
         if re.match(r'^#{2,4}\s+.+', stripped):
             last_section_header = re.sub(r'^#{2,4}\s+', '', stripped)
 
-        # Detectar inicio de bloque de output
         if stripped.startswith('```output'):
             in_output_block = True
             output_buffer = []
             continue
-        # Detectar fin de bloque de output
         if in_output_block and stripped == '```':
-            # Construir título del bloque
             titulo_bloque = 'Resultado'
             if last_section_header:
                 titulo_bloque = f"Resultado · {last_section_header}"
 
-            # Mostrar el bloque de output con formato especial
             if ASCII_MODE:
-                print('\n' + '-' * FRAME_WIDTH)
-                print(f" {titulo_bloque} ".center(FRAME_WIDTH, '-'))
+                print('\n' + '-' * 80)
+                print(f" {titulo_bloque} ".center(80, '-'))
             else:
-                print('\n' + '╔' + '═' * FRAME_WIDTH + '╗')
-                print(linea_marco(centrar_visual(f" {titulo_bloque} ", FRAME_WIDTH), FRAME_WIDTH, "║", "║"))
-                print('╠' + '═' * FRAME_WIDTH + '╣')
+                print('\n' + '╔' + '═' * 78 + '╗')
+                print(linea_marco(centrar_visual(f" {titulo_bloque} ", 78), 78, "║", "║"))
+                print('╠' + '═' * 78 + '╣')
+            
             for out_line in output_buffer:
-                # Ajustar ancho y márgenes, envolver líneas largas
-                sublines = dividir_por_ancho(out_line, FRAME_WIDTH - 2) or ['']
-                for subline in sublines:
-                    if ASCII_MODE:
-                        print(subline)
-                    else:
-                        print('║ ' + rellenar_visual(subline, FRAME_WIDTH - 2) + ' ║')
+                print(out_line)
+            
             if not ASCII_MODE:
-                print('╚' + '═' * FRAME_WIDTH + '╝\n')
+                print('╚' + '═' * 78 + '╝\n')
             in_output_block = False
             output_buffer = []
             continue
@@ -943,7 +932,6 @@ def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
             print(linea)
             shown += 1
             if shown >= max_lines and not DEMO_MODE:
-                # Evitar cortar dentro de cuadros: esperar a línea en blanco, con tope
                 if stripped:
                     defer_counter += 1
                     if defer_counter < 30:

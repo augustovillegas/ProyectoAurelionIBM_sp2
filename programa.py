@@ -402,6 +402,12 @@ def construir_estructura_menus(secciones: Dict[str, str]) -> OpcionMenu:
             descripcion="Ejemplos de salidas y resultados de los modelos"
         ))
 
+    # Opción 13: Diagrama de flujo del menú
+    menu_raiz.hijos.append(OpcionMenu(
+        clave="DIAGRAMA_FLUJO_MENU", etiqueta="Diagrama de Flujo del Menú", icono="🔀", tipo=TipoOpcion.CONTENIDO,
+        descripcion="Visualiza el diagrama de flujo de navegación del menú"
+    ))
+
     if ASCII_MODE:
         aplicar_ascii_iconos(menu_raiz)
     return menu_raiz
@@ -878,17 +884,76 @@ def mostrar_contenido(titulo: str, contenido: str, ruta: List[str]):
     limpiar_pantalla()
     mostrar_header()
     mostrar_breadcrumbs(ruta)
-    
-    if ASCII_MODE:
-        print("\n" + "=" * ANCHO_MARCO)
-        print(f" {titulo} ".center(ANCHO_MARCO, "="))
-        print("=" * ANCHO_MARCO + "\n")
-    else:
-        print("\n" + "╔" + "═" * ANCHO_MARCO + "╗")
-        print(linea_marco(centrar_visual(f" {titulo} ", ANCHO_MARCO), ANCHO_MARCO, "║", "║"))
-        print("╚" + "═" * ANCHO_MARCO + "╝\n")
-    
-    # Mostrar contenido con scroll y bloques de output destacados (mejorado)
+
+    # Mostrar diagrama de flujo profesional, alineado y detallado
+    if titulo and ("DIAGRAMA_FLUJO_MENU" in titulo.upper() or "DIAGRAMA DE FLUJO DEL MENÚ" in titulo.upper()):
+        print("\n" + ("═" * ANCHO_MARCO))
+        print(linea_marco(" DIAGRAMA DE FLUJO DEL MENÚ PRINCIPAL ", ANCHO_MARCO, "║", "║"))
+        print("╠" + "═" * ANCHO_MARCO + "╣")
+        # Diagrama alineado y distribuido
+        diagrama = [
+            "              ┌───────────────┐",
+            "              │   INICIO     │",
+            "              └─────┬───────┘",
+            "                    │",
+            "                    ▼",
+            "        ┌───────────────────────────────┐",
+            "        │ Encabezado / Portada          │",
+            "        └─────────────┬───────────────┘",
+            "                    │",
+            "                    ▼",
+            "        ┌───────────────────────────────┐",
+            "        │      MENÚ PRINCIPAL           │",
+            "        │     (Opciones 1 a 13)         │",
+            "        └─────────────┬───────────────┘",
+            "                    │",
+            "                    ▼",
+            "              ◇ Decisión: Selección de opción ◇",
+            "                    │",
+            "        ┌─────────────┬─────────────┬─────────────┐",
+            "        │             │             │             │",
+            "        ▼             ▼             ▼             ▼",
+            "   [Opción 1]   ...   [Opción 13]   [Diagrama]   [Otra]",
+            "        │             │             │             │",
+            "        └─────────────┴─────────────┴─────────────┘",
+            "                    │",
+            "                    ▼",
+            "        ┌───────────────────────────────┐",
+            "        │     SECCIÓN DE CONTENIDO      │",
+            "        │ (Documentación, artefactos,   │",
+            "        │  outputs, diagrama, etc.)     │",
+            "        └─────────────┬───────────────┘",
+            "                    │",
+            "                    ▼",
+            "              ◇ Decisión: Acción de navegación ◇",
+            "                    │",
+            "        ┌─────────────┬─────────────┬─────────────┐",
+            "        │             │             │             │",
+            "        ▼             ▼             ▼             ▼",
+            "   [0] Volver   [R] Recargar   [Q] Salir   [Salto]",
+            "        │             │             │             │",
+            "        └─────────────┴─────────────┴─────────────┘",
+            "                    │",
+            "                    ▼",
+            "              ┌───────────────┐",
+            "              │     FIN       │",
+            "              └───────────────┘",
+            "",
+            "  Leyenda:",
+            "    ┌───────────────┐  Proceso/Paso (rectángulo)",
+            "    ◇             ◇  Decisión (rombo)",
+            "    [ ]               Opción/Acción",
+            "    ▼                 Flecha/flujo",
+            "    │                 Conexión",
+            "    INICIO/FIN        Óvalo",
+        ]
+        for l in diagrama:
+            print(linea_marco(l, ANCHO_MARCO, "║", "║"))
+        print("╚" + "═" * ANCHO_MARCO + "╝")
+        pausar()
+        return
+
+    # ...existing code...
     lineas = contenido.split('\n')
     in_output_block = False
     output_buffer = []

@@ -1,0 +1,114 @@
+@page {
+  margin: 20mm 18mm;
+}
+
+:root {
+  --ink: #1f1f1f;
+  --muted: #5c5c5c;
+  --accent: #0b525b;
+  --accent-2: #e07a5f;
+  --paper: #fbfaf7;
+  --line: #e1ddd6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.55;
+  font-size: 11.5pt;
+}
+
+h1, h2, h3 {
+  font-family: "Gill Sans MT", "Trebuchet MS", sans-serif;
+  color: var(--ink);
+  margin: 0 0 8px 0;
+}
+
+h1 {
+  font-size: 28pt;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+h2 {
+  margin-top: 16px;
+  font-size: 15.5pt;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 4px;
+}
+
+h3 {
+  margin-top: 12px;
+  font-size: 12.5pt;
+  color: var(--accent);
+}
+
+p {
+  margin: 0 0 10px 0;
+}
+
+em {
+  color: var(--muted);
+}
+
+ul {
+  margin: 6px 0 10px 18px;
+}
+
+li {
+  margin: 2px 0;
+}
+
+code {
+  background: #f1efe9;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 10.5pt;
+}
+
+hr {
+  border: none;
+  height: 1px;
+  background: var(--line);
+  margin: 18px 0 8px 0;
+  page-break-after: always;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0 14px 0;
+  background: #ffffff;
+  border: 1px solid var(--line);
+}
+
+th, td {
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  font-size: 10.5pt;
+  vertical-align: top;
+}
+
+th {
+  background: #f3f1ec;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-size: 9.5pt;
+}
+
+strong {
+  color: var(--accent);
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+}
